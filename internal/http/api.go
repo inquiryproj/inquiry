@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -62,6 +61,7 @@ type API struct {
 
 	port          int
 	shutdownDelay time.Duration
+	logger        *slog.Logger
 }
 
 // NewAPI creates a new API server.
@@ -98,6 +98,7 @@ func NewAPI(handler ServerInterface, opts ...Opts) *API {
 		e:             e,
 		port:          options.Port,
 		shutdownDelay: options.ShutdownDelay,
+		logger:        options.Logger,
 	}
 }
 
@@ -108,10 +109,10 @@ func (a *API) Run() error {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		// Start server
-
+		a.logger.Info("starting server")
 		err := a.e.Start(fmt.Sprintf(":%d", a.port))
 		if errors.Is(http.ErrServerClosed, err) {
-			log.Default().Println("server closed gracefully")
+			a.logger.Info("server closed gracefully")
 		} else if err != nil {
 			errChan <- err
 		}
@@ -123,10 +124,10 @@ func (a *API) Run() error {
 	case <-c:
 	}
 	time.Sleep(a.shutdownDelay)
-	log.Default().Println("Shutting down server")
+	a.logger.Info("Shutting down server")
 	err := a.e.Shutdown(context.Background())
 	if err != nil {
-		log.Default().Println("unable to shutdown server")
+		a.logger.Error("unable to shutdown server", slog.String("error", err.Error()))
 	}
 	return nil
 }
