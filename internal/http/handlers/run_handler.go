@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
+	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/service"
 )
 
@@ -26,8 +27,8 @@ func newRunHandler(runnerService service.Runner, options *Options) *RunHandler {
 
 // RunProject runs all scenarios for a given project.
 func (h *RunHandler) RunProject(ctx echo.Context, id uuid.UUID) error {
-	_ = id
-
-	_ = ctx
-	return nil
+	_, err := h.runnerService.RunProject(ctx.Request().Context(), &app.RunProjectRequest{
+		ProjectID: id,
+	})
+	return err
 }
