@@ -12,7 +12,8 @@ import (
 // RunHandler handles run requests.
 type RunHandler struct {
 	runnerService service.Runner
-	logger        *slog.Logger
+
+	logger *slog.Logger
 }
 
 // newRunHandler creates a new run handler.

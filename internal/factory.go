@@ -24,7 +24,7 @@ func NewApp() (App, error) {
 	}
 	logger := loggerFactory(cfg.LogLevel, cfg.LogFormat)
 
-	repositoryWrapper, err := repositoryFactory()
+	repositoryWrapper, err := repositoryFactory(cfg.RepositoryConfig)
 	if err != nil {
 		logger.Error("failed to initialise repository", slog.String("error", err.Error()))
 		return nil, err
@@ -77,6 +77,9 @@ func serviceFactory(repositoryWrapper repository.Wrapper) service.Wrapper {
 	return service.NewServiceWrapper(repositoryWrapper)
 }
 
-func repositoryFactory() (repository.Wrapper, error) {
-	return repository.NewSQLiteWrapper()
+func repositoryFactory(repositoryConfig RepositoryConfig) (repository.Wrapper, error) {
+	return repository.NewWrapper(
+		repository.WithRepositoryType(repositoryConfig.RepositoryType.String()),
+		repository.WithDSN(repositoryConfig.DSN),
+	)
 }

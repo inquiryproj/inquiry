@@ -38,6 +38,11 @@ type Config struct {
 // RepositoryType is the type of repository.
 type RepositoryType string
 
+// String returns the string representation of the repository type.
+func (r RepositoryType) String() string {
+	return string(r)
+}
+
 // Repository types.
 const (
 	RepositoryTypeSQLite RepositoryType = "sqlite"

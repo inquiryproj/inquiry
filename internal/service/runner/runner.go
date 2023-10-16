@@ -4,15 +4,30 @@ package runner
 import (
 	"context"
 
+	"log/slog"
+
 	"github.com/inquiryproj/inquiry/internal/app"
+	"github.com/inquiryproj/inquiry/internal/repository"
+	"github.com/inquiryproj/inquiry/internal/service/options"
 )
 
 // Runner is the runner service.
-type Runner struct{}
+type Runner struct {
+	scenarioRepository repository.Scenario
+
+	logger *slog.Logger
+}
 
 // NewService initialises the runner service.
-func NewService() *Runner {
-	return &Runner{}
+func NewService(scenarioRepository repository.Scenario, opts ...options.Opts) *Runner {
+	options := options.DefaultOptions()
+	for _, opt := range opts {
+		opt(options)
+	}
+	return &Runner{
+		scenarioRepository: scenarioRepository,
+		logger:             options.Logger,
+	}
 }
 
 // RunProject runs all scenarios for a given project.
