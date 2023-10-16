@@ -23,36 +23,37 @@ type Project interface {
 // Scenario is the scenario repository.
 type Scenario interface {
 	CreateScenario(ctx context.Context, scenario *app.CreateScenarioRequest) (*app.Scenario, error)
+	GetForProject(ctx context.Context, getForProjectRequest *app.GetScenariosForProjectRequest) ([]*app.Scenario, error)
 }
 
-// RepositoryType is the type of repository.
-type RepositoryType string
+// Type is the type of repository.
+type Type string
 
 // Repository types.
 const (
-	RepositoryTypeSQLite RepositoryType = "sqlite"
+	TypeSQLite Type = "sqlite"
 )
 
-// RepositoryTypeFromString converts a string to a repository type.
-func RepositoryTypeFromString(repositoryType string) RepositoryType {
+// TypeFromString converts a string to a repository type.
+func TypeFromString(repositoryType string) Type {
 	switch repositoryType {
 	case "sqlite":
-		return RepositoryTypeSQLite
+		return TypeSQLite
 	default:
-		return RepositoryTypeSQLite
+		return TypeSQLite
 	}
 }
 
 // Options represents the options for the handlers.
 type Options struct {
-	DSN            string
-	RepositoryType RepositoryType
+	DSN  string
+	Type Type
 }
 
 func defaultOptions() *Options {
 	return &Options{
-		DSN:            "inquiry.db",
-		RepositoryType: RepositoryTypeSQLite,
+		DSN:  "inquiry.db",
+		Type: TypeSQLite,
 	}
 }
 
@@ -66,20 +67,21 @@ func WithDSN(dsn string) Opts {
 	}
 }
 
-// WithRepositoryType sets the repository type.
-func WithRepositoryType(repositoryType string) Opts {
+// WithType sets the repository type.
+func WithType(repositoryType string) Opts {
 	return func(o *Options) {
-		o.RepositoryType = RepositoryTypeFromString(repositoryType)
+		o.Type = TypeFromString(repositoryType)
 	}
 }
 
+// NewWrapper initialises the repository wrapper.
 func NewWrapper(opts ...Opts) (Wrapper, error) {
 	options := defaultOptions()
 	for _, o := range opts {
 		o(options)
 	}
-	switch options.RepositoryType {
-	case RepositoryTypeSQLite:
+	switch options.Type {
+	case TypeSQLite:
 		return NewSQLiteWrapper(options.DSN)
 	default:
 		return NewSQLiteWrapper(options.DSN)

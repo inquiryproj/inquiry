@@ -71,3 +71,8 @@ type ProjectRunOutput struct {
 	ProjectID uuid.UUID
 	Name      string
 }
+
+// GetScenariosForProjectRequest requests model for retrieving scenarios for a project.
+type GetScenariosForProjectRequest struct {
+	ProjectID uuid.UUID
+}

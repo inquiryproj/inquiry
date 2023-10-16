@@ -3,12 +3,11 @@ package project
 
 import (
 	"context"
-
 	"log/slog"
 
 	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/repository"
-	"github.com/inquiryproj/inquiry/internal/service/options"
+	serviceOptions "github.com/inquiryproj/inquiry/internal/service/options"
 )
 
 // Project is the project service.
@@ -19,8 +18,8 @@ type Project struct {
 }
 
 // NewService initialises the project service.
-func NewService(projectRepository repository.Project, opts ...options.Opts) *Project {
-	options := options.DefaultOptions()
+func NewService(projectRepository repository.Project, opts ...serviceOptions.Opts) *Project {
+	options := serviceOptions.DefaultOptions()
 	for _, opt := range opts {
 		opt(options)
 	}

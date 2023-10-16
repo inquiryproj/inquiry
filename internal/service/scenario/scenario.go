@@ -3,12 +3,11 @@ package scenario
 
 import (
 	"context"
-
 	"log/slog"
 
 	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/repository"
-	"github.com/inquiryproj/inquiry/internal/service/options"
+	serviceOptions "github.com/inquiryproj/inquiry/internal/service/options"
 )
 
 // Scenario is the scenario service.
@@ -19,8 +18,8 @@ type Scenario struct {
 }
 
 // NewService initialises the scenario service.
-func NewService(scenarioRepository repository.Scenario, opts ...options.Opts) *Scenario {
-	options := options.DefaultOptions()
+func NewService(scenarioRepository repository.Scenario, opts ...serviceOptions.Opts) *Scenario {
+	options := serviceOptions.DefaultOptions()
 	for _, opt := range opts {
 		opt(options)
 	}

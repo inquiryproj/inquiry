@@ -79,7 +79,7 @@ func serviceFactory(repositoryWrapper repository.Wrapper) service.Wrapper {
 
 func repositoryFactory(repositoryConfig RepositoryConfig) (repository.Wrapper, error) {
 	return repository.NewWrapper(
-		repository.WithRepositoryType(repositoryConfig.RepositoryType.String()),
+		repository.WithType(repositoryConfig.RepositoryType.String()),
 		repository.WithDSN(repositoryConfig.DSN),
 	)
 }

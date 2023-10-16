@@ -39,11 +39,29 @@ func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioR
 	} else if err != nil {
 		return nil, err
 	}
+	return scenarioToAppScenario(sqliteScenario), nil
+}
+
+// GetForProject returns all scenarios for a given project.
+func (r *ScenarioRepository) GetForProject(ctx context.Context, getForProjectRequest *app.GetScenariosForProjectRequest) ([]*app.Scenario, error) {
+	scenarios := []*Scenario{}
+	err := r.conn.WithContext(ctx).Where("project_id = ?", getForProjectRequest.ProjectID).Find(&scenarios).Error
+	if err != nil {
+		return nil, err
+	}
+	result := []*app.Scenario{}
+	for _, scenario := range scenarios {
+		result = append(result, scenarioToAppScenario(scenario))
+	}
+	return result, nil
+}
+
+func scenarioToAppScenario(scenario *Scenario) *app.Scenario {
 	return &app.Scenario{
-		ID:        sqliteScenario.ID,
-		Name:      sqliteScenario.Name,
-		SpecType:  app.ScenarioSpecType(sqliteScenario.SpecType),
-		Spec:      sqliteScenario.Spec,
-		ProjectID: sqliteScenario.ProjectID,
-	}, nil
+		ID:        scenario.ID,
+		Name:      scenario.Name,
+		SpecType:  app.ScenarioSpecType(scenario.SpecType),
+		Spec:      scenario.Spec,
+		ProjectID: scenario.ProjectID,
+	}
 }

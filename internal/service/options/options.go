@@ -1,3 +1,4 @@
+// Package options provides the service options.
 package options
 
 import (
