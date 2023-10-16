@@ -1,24 +1,6 @@
-// Package app declares the domain models.
 package app
 
 import "github.com/google/uuid"
-
-// Project is the project domain model.
-type Project struct {
-	ID   uuid.UUID
-	Name string
-}
-
-// GetProjectsRequest requests model for retrieving projects.
-type GetProjectsRequest struct {
-	Limit  int
-	Offset int
-}
-
-// CreateProjectRequest requests model for creating a project.
-type CreateProjectRequest struct {
-	Name string
-}
 
 // ScenarioSpecType is the type of the scenario spec.
 type ScenarioSpecType string
@@ -58,18 +40,6 @@ type CreateScenarioRequest struct {
 	SpecType  ScenarioSpecType
 	Spec      string
 	ProjectID uuid.UUID
-}
-
-// RunProjectRequest requests model for running a project.
-type RunProjectRequest struct {
-	ProjectID uuid.UUID
-}
-
-// ProjectRunOutput is the output of a project run.
-type ProjectRunOutput struct {
-	ID        uuid.UUID
-	ProjectID uuid.UUID
-	Name      string
 }
 
 // GetScenariosForProjectRequest requests model for retrieving scenarios for a project.
