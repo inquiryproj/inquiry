@@ -5,7 +5,9 @@ import (
 	"log/slog"
 	"os"
 
-	server "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/events/runs"
+	"github.com/inquiryproj/inquiry/internal/events/runs/run"
+	"github.com/inquiryproj/inquiry/internal/http"
 	"github.com/inquiryproj/inquiry/internal/http/handlers"
 	"github.com/inquiryproj/inquiry/internal/repository"
 	"github.com/inquiryproj/inquiry/internal/service"
@@ -30,16 +32,23 @@ func NewApp() (App, error) {
 		return nil, err
 	}
 
-	serviceWrapper := serviceFactory(repositoryWrapper)
+	runsProducer, runsConsumer, err := runEventsFactory(repositoryWrapper)
+	if err != nil {
+		logger.Error("failed to initialise runs events", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	serviceWrapper := serviceFactory(repositoryWrapper, runsProducer)
 
 	handlerWrapper := handlers.NewHandlerWrapper(serviceWrapper,
 		handlers.WithLogger(logger),
 	)
 
-	return server.NewAPI(handlerWrapper,
-		server.WithLogger(logger),
-		server.WithPort(cfg.ServerConfig.Port),
-		server.WithShutdownDelay(cfg.ServerConfig.ShutdownDelay),
+	return http.NewAPI(handlerWrapper,
+		http.WithLogger(logger),
+		http.WithPort(cfg.ServerConfig.Port),
+		http.WithShutdownDelay(cfg.ServerConfig.ShutdownDelay),
+		http.WithRunnable(runsConsumer),
 	), nil
 }
 
@@ -73,8 +82,41 @@ func leveler(logLevel LogLevel) slog.Leveler {
 	}
 }
 
-func serviceFactory(repositoryWrapper repository.Wrapper) service.Wrapper {
-	return service.NewServiceWrapper(repositoryWrapper)
+func runEventsFactory(repositoryWrapper repository.Wrapper) (runs.Producer, http.Runnable, error) {
+	runProcessor := processorFactory(repositoryWrapper)
+	producer, consumer, err := runs.NewProducerConsumer(runProcessor)
+	if err != nil {
+		return nil, nil, err
+	}
+	return producer, newRunnableConsumer(consumer, "runs consumer"), nil
+}
+
+type runnableConsumer struct {
+	runs.Consumer
+	name string
+}
+
+func newRunnableConsumer(consumer runs.Consumer, name string) http.Runnable {
+	return &runnableConsumer{
+		Consumer: consumer,
+		name:     name,
+	}
+}
+
+func (r *runnableConsumer) Start() error {
+	return r.Consume()
+}
+
+func (r *runnableConsumer) Name() string {
+	return r.name
+}
+
+func processorFactory(repositoryWrapper repository.Wrapper) run.Processor {
+	return run.NewProcessor(repositoryWrapper)
+}
+
+func serviceFactory(repositoryWrapper repository.Wrapper, runsProducer runs.Producer) service.Wrapper {
+	return service.NewServiceWrapper(repositoryWrapper, runsProducer)
 }
 
 func repositoryFactory(repositoryConfig RepositoryConfig) (repository.Wrapper, error) {
