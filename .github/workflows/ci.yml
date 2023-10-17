@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: lint Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.54.2
+  test:
+    name: unit test Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+      - name: Go test
+        run: |
+          make test
+  validate-go-mod:
+    name: validate go.mod is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+      - name: Tidy go modules
+        run: go mod tidy
+      - name: Check Git Diff
+        run: |
+          if [[ -n $(git diff --exit-code) ]]; then
+            echo "Git diff detected. Did you forget to run go mod tidy?"
+            exit 1
+          else
+            echo "Go mod is  up to date."
+          fi
+  validate-oapi-gen:
+    name: validate server code was generated from open api spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+      - name: Generate server code from open api spec
+        run: make oapi-gen
+      - name: Check Git Diff
+        run: |
+          if [[ -n $(git diff --exit-code) ]]; then
+            echo "Git diff detected. Did you forget to run make oapi-gen?"
+            exit 1
+          else
+            echo "Go mod is  up to date."
+          fi
+  lint-oapi:
+    name: lint open api spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate server code from open api spec
+        run: make lint-oapi

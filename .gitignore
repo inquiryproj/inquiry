@@ -1,0 +1,6 @@
+reports
+
+# sqlite db
+*.db
+
+scenario.yaml

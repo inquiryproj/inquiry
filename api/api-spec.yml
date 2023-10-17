@@ -1,0 +1,219 @@
+openapi: 3.1.0
+servers:
+  - url: http://localhost:3000
+info:
+  title: Inquiry Server
+  description: The Inquiry Server API
+  version: 0.0.1
+  contact:
+    name: Wim Spaargaren
+    url: "https://github.com/inquiryproj/inquiry"
+    email: "wim_spaargaren@live.nl"
+tags:
+  - name: projects
+    description: API endpoints for managing projects
+  - name: scenarios
+    description: API endpoints for managing scenarios
+  - name: run
+    description: Run endpoints
+  - name: create
+    description: Create endpoints
+  - name: list
+    description: List endpoints
+components:
+  schemas:
+    Project:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          x-go-type: uuid.UUID
+          x-go-name: ID
+          x-go-type-import:
+            path: github.com/google/uuid
+        name: 
+          type: string
+    ProjectArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Project'
+    Scenario:
+      type: object
+      required:
+        - id
+        - name
+        - spec_type
+        - spec
+        - project_id
+      properties:
+        id:
+          x-go-type: uuid.UUID
+          x-go-name: ID
+          x-go-type-import:
+            path: github.com/google/uuid
+        name: 
+          type: string
+        spec_type: 
+          type: string
+        spec: 
+          type: string
+        project_id:
+          x-go-type: uuid.UUID
+          x-go-name: ProjectID
+          x-go-type-import:
+            path: github.com/google/uuid
+    ProjectRunOutput:
+      type: object
+      required:
+        - id
+        - project_id
+        - success
+      properties:
+        id:
+          x-go-type: uuid.UUID
+          x-go-name: ID
+          x-go-type-import:
+            path: github.com/google/uuid
+        project_id:
+          x-go-type: uuid.UUID
+          x-go-name: ProjectID
+          x-go-type-import:
+            path: github.com/google/uuid
+      spec_type: 
+          type: boolean
+    ErrMsg:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+paths:
+  "/v1/projects":
+    description: API endpoints for managing projects
+    post:
+      description: Creates a project
+      operationId: createProject
+      tags:
+        - projects
+        - create
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Project"
+      responses: 
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+          description: The project was successfully created.
+        default:
+          description: Unable to create project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
+    get:
+      description: Lists all projects
+      operationId: listProjects
+      tags:
+        - projects
+        - list
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 250
+          description: The number of projects to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: The number of projects to skip
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectArray"
+          description: List of projects.
+        default:
+          description: Unable to list projects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
+  "/v1/projects/{id}/scenarios":
+    post:
+      description: Creates a scenario
+      operationId: createScenario
+      tags:
+        - scenarios
+        - create
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-name: ID
+            x-go-type-import:
+              path: github.com/google/uuid
+          required: true
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Scenario"
+      responses: 
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Scenario"
+          description: The scenario was successfully created.
+        default:
+          description: Unable to create scenario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
+  "/v1/projects/{id}/run":
+    post:
+      description: Runs all scenarios for a given project
+      operationId: runProject
+      tags:
+        - projects
+        - run
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-name: ID
+            x-go-type-import:
+              path: github.com/google/uuid
+          required: true
+      responses: 
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRunOutput"
+          description: The scenarios for the project ran successfully.
+        default:
+          description: Something went wrong while running the scenarios
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
