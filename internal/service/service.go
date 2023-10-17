@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/inquiryproj/inquiry/internal/app"
+	"github.com/inquiryproj/inquiry/internal/events/runs"
 	"github.com/inquiryproj/inquiry/internal/repository"
 	"github.com/inquiryproj/inquiry/internal/service/options"
 	"github.com/inquiryproj/inquiry/internal/service/project"
@@ -36,7 +37,11 @@ type Runner interface {
 }
 
 // NewServiceWrapper initialises all services.
-func NewServiceWrapper(repositoryWrapper repository.Wrapper, opts ...options.Opts) Wrapper {
+func NewServiceWrapper(
+	repositoryWrapper repository.Wrapper,
+	runsProducer runs.Producer,
+	opts ...options.Opts,
+) Wrapper {
 	return &struct {
 		*project.Project
 		*scenario.Scenario
@@ -44,6 +49,6 @@ func NewServiceWrapper(repositoryWrapper repository.Wrapper, opts ...options.Opt
 	}{
 		project.NewService(repositoryWrapper, opts...),
 		scenario.NewService(repositoryWrapper, opts...),
-		runner.NewService(repositoryWrapper, opts...),
+		runner.NewService(repositoryWrapper, runsProducer, opts...),
 	}
 }
