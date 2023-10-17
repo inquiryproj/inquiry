@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/oapi-codegen/runtime v1.0.0
-	github.com/samber/slog-echo v1.3.0
+	github.com/samber/slog-echo v1.5.0
 	github.com/tidwall/gjson v1.17.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/sqlite v1.5.4
