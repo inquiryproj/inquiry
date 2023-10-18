@@ -4,6 +4,8 @@ package repository
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
 	"github.com/inquiryproj/inquiry/internal/repository/sqlite"
 )
@@ -29,6 +31,7 @@ type Scenario interface {
 
 // Run is the run repository.
 type Run interface {
+	GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error)
 	CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error)
 	UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error)
 	GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error)

@@ -19,26 +19,61 @@ import (
 // Processor processes runs.
 type Processor interface {
 	// Process processes a run.
-	Process(projectID uuid.UUID) (*app.ProjectRunOutput, error)
+	Process(runID uuid.UUID) (*app.ProjectRunOutput, error)
 }
 
 type processor struct {
 	scenarioRepository repository.Scenario
+	runRepository      repository.Run
 
 	logger *slog.Logger
 }
 
 // NewProcessor creates a new run processor.
-func NewProcessor(scenarioRepository repository.Scenario) Processor {
+func NewProcessor(scenarioRepository repository.Scenario, runRepository repository.Run) Processor {
 	return &processor{
 		scenarioRepository: scenarioRepository,
-		logger:             slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})),
+		runRepository:      runRepository,
+
+		logger: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})),
 	}
 }
 
 // Process processes a run for a given project ID.
-func (p *processor) Process(projectID uuid.UUID) (*app.ProjectRunOutput, error) {
-	p.logger.Info("processing project", slog.String("project_id", projectID.String()))
+func (p *processor) Process(runID uuid.UUID) (*app.ProjectRunOutput, error) {
+	run, err := p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
+		ID:    runID,
+		State: domain.RunStateRunning,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	p.logger.Info("processing project", slog.String("project_id", run.ProjectID.String()))
+
+	_, err = p.processProject(run.ProjectID)
+	if err != nil {
+		_, err = p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
+			ID:           runID,
+			State:        domain.RunStateFailure,
+			ErrorMessage: err.Error(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()))
+
+	_, err = p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
+		ID:    runID,
+		State: domain.RunStateSuccess,
+	})
+
+	return nil, err
+}
+
+func (p *processor) processProject(projectID uuid.UUID) (*app.ProjectRunOutput, error) {
 	scenarios, err := p.scenarioRepository.GetForProject(context.Background(), &domain.GetScenariosForProjectRequest{
 		ProjectID: projectID,
 	})
@@ -63,7 +98,6 @@ func (p *processor) Process(projectID uuid.UUID) (*app.ProjectRunOutput, error) 
 			return nil, err
 		}
 	}
-	p.logger.Info("project processed", slog.String("project_id", projectID.String()))
 
-	return nil, nil
+	return &app.ProjectRunOutput{}, nil
 }

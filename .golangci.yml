@@ -155,6 +155,15 @@ linters-settings:
         deny:
           - pkg: "github.com/inquiryproj/inquiry/internal/app"
             desc: repository should not depend on app
+      service:
+        files:
+          - "**service/*.go"
+          - "**service/**/*.go"
+        deny:
+          - pkg: "github.com/labstack/echo/v4"
+            desc: service has no transport layer knowledge
+          - pkg: "net/http"
+            desc: service has no transport layer knowledge
       handlers:
         files:
           - "**http/handlers/*.go"
