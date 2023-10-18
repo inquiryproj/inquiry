@@ -27,6 +27,7 @@ func (u *BaseModel) BeforeCreate(_ *gorm.DB) (err error) {
 type Repository struct {
 	*ProjectRepository
 	*ScenarioRepository
+	*RunRepository
 }
 
 // NewRepository initialises the sqlite repository.
@@ -40,6 +41,7 @@ func NewRepository(dsn string) (*Repository, error) {
 	err = db.AutoMigrate(
 		&Project{},
 		&Scenario{},
+		&Run{},
 	)
 	if err != nil {
 		return nil, err
@@ -49,6 +51,9 @@ func NewRepository(dsn string) (*Repository, error) {
 			conn: db,
 		},
 		ScenarioRepository: &ScenarioRepository{
+			conn: db,
+		},
+		RunRepository: &RunRepository{
 			conn: db,
 		},
 	}, nil

@@ -82,7 +82,7 @@ func leveler(logLevel LogLevel) slog.Leveler {
 	}
 }
 
-func runEventsFactory(repositoryWrapper repository.Wrapper) (runs.Producer, http.Runnable, error) {
+func runEventsFactory(repositoryWrapper *repository.Wrapper) (runs.Producer, http.Runnable, error) {
 	runProcessor := processorFactory(repositoryWrapper)
 	producer, consumer, err := runs.NewProducerConsumer(runProcessor)
 	if err != nil {
@@ -111,15 +111,15 @@ func (r *runnableConsumer) Name() string {
 	return r.name
 }
 
-func processorFactory(repositoryWrapper repository.Wrapper) run.Processor {
-	return run.NewProcessor(repositoryWrapper)
+func processorFactory(repositoryWrapper *repository.Wrapper) run.Processor {
+	return run.NewProcessor(repositoryWrapper.Scenario)
 }
 
-func serviceFactory(repositoryWrapper repository.Wrapper, runsProducer runs.Producer) service.Wrapper {
+func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer runs.Producer) service.Wrapper {
 	return service.NewServiceWrapper(repositoryWrapper, runsProducer)
 }
 
-func repositoryFactory(repositoryConfig RepositoryConfig) (repository.Wrapper, error) {
+func repositoryFactory(repositoryConfig RepositoryConfig) (*repository.Wrapper, error) {
 	return repository.NewWrapper(
 		repository.WithType(repositoryConfig.RepositoryType.String()),
 		repository.WithDSN(repositoryConfig.DSN),

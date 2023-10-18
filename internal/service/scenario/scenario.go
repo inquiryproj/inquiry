@@ -3,10 +3,12 @@ package scenario
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/repository"
+	"github.com/inquiryproj/inquiry/internal/repository/domain"
 	serviceOptions "github.com/inquiryproj/inquiry/internal/service/options"
 )
 
@@ -30,8 +32,29 @@ func NewService(scenarioRepository repository.Scenario, opts ...serviceOptions.O
 }
 
 // CreateScenario creates a new scenario.
-func (s *Scenario) CreateScenario(ctx context.Context, scenario *app.CreateScenarioRequest) (*app.Scenario, error) {
+func (s *Scenario) CreateScenario(ctx context.Context, createScenarioRequest *app.CreateScenarioRequest) (*app.Scenario, error) {
 	// FIXME validate spec
 	// Validate payload
-	return s.scenarioRepository.CreateScenario(ctx, scenario)
+	scenario, err := s.scenarioRepository.CreateScenario(ctx, &domain.CreateScenarioRequest{
+		Name:      createScenarioRequest.Name,
+		SpecType:  domain.ScenarioSpecType(createScenarioRequest.SpecType),
+		Spec:      createScenarioRequest.Spec,
+		ProjectID: createScenarioRequest.ProjectID,
+	})
+	if errors.Is(err, domain.ErrScenarioAlreadyExists) {
+		return nil, app.ErrScenarioAlreadyExists
+	} else if err != nil {
+		return nil, err
+	}
+	return scenarioToAppScenario(scenario), nil
+}
+
+func scenarioToAppScenario(scenario *domain.Scenario) *app.Scenario {
+	return &app.Scenario{
+		ID:        scenario.ID,
+		Name:      scenario.Name,
+		SpecType:  app.ScenarioSpecType(scenario.SpecType),
+		Spec:      scenario.Spec,
+		ProjectID: scenario.ProjectID,
+	}
 }

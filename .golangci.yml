@@ -130,6 +130,43 @@ linters-settings:
         paramsOnly: true
       rangeValCopy:
         sizeThreshold: 32
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: "github.com/sirupsen/logrus"
+            desc: not allowed
+          - pkg: "github.com/pkg/errors"
+            desc: Should be replaced by standard lib errors package
+          - pkg: "github.com/pkg/errors"
+            desc: Should be replaced by standard lib errors package
+          - pkg: "ioti/ioul"
+            desc: "Deprecated: As of Go 1.16, the same functionality is now provided by package io or package os, and those implementations should be preferred in new code. See the specific function documentation for details."
+          - pkg: "gopkg.in/yaml.v2"
+            desc: "Grafana packages are not allowed to depend on gopkg.in/yaml.v2 as gopkg.in/yaml.v3 is now available"
+          - pkg: "github.com/xorcare/pointer"
+            desc: "Use pkg/util.Pointer instead, which is a generic one-liner alternative"
+          - pkg: "github.com/gofrs/uuid"
+            desc: "Use github.com/google/uuid instead, which we already depend on."
+      repository:
+        files:
+          - "**repository/*.go"
+          - "**repository/**/*.go"
+        deny:
+          - pkg: "github.com/inquiryproj/inquiry/internal/app"
+            desc: repository should not depend on app
+      handlers:
+        files:
+          - "**http/handlers/*.go"
+        deny:
+          - pkg: "github.com/inquiryproj/inquiry/internal/repository"
+            desc: handler should only depend on app & service
+      pkg:
+        files:
+          - "**pkg/*.go"
+          - "**pkg/**/*.go"
+        allow:
+          - $gostd
 
 linters:
   disable-all: true
@@ -179,8 +216,7 @@ linters:
     - lll
     - prealloc
     - testpackage
-    # Disabled
-    # - depguard
+    - depguard
    
   fast: false
 

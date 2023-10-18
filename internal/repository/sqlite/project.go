@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/inquiryproj/inquiry/internal/app"
+	"github.com/inquiryproj/inquiry/internal/repository/domain"
 )
 
 // Project is the sqlite project model.
@@ -23,7 +23,7 @@ type ProjectRepository struct {
 }
 
 // GetProjects returns all projects from sqlite.
-func (r *ProjectRepository) GetProjects(ctx context.Context, getProjectsRequest *app.GetProjectsRequest) ([]*app.Project, error) {
+func (r *ProjectRepository) GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error) {
 	projects := []*Project{}
 	err := r.conn.
 		WithContext(ctx).
@@ -36,10 +36,10 @@ func (r *ProjectRepository) GetProjects(ctx context.Context, getProjectsRequest 
 	return toAppProjects(projects), nil
 }
 
-func toAppProjects(projects []*Project) []*app.Project {
-	appProjects := make([]*app.Project, len(projects))
+func toAppProjects(projects []*Project) []*domain.Project {
+	appProjects := make([]*domain.Project, len(projects))
 	for i, project := range projects {
-		appProjects[i] = &app.Project{
+		appProjects[i] = &domain.Project{
 			ID:   project.ID,
 			Name: project.Name,
 		}
@@ -48,17 +48,17 @@ func toAppProjects(projects []*Project) []*app.Project {
 }
 
 // CreateProject creates a new project in sqlite.
-func (r *ProjectRepository) CreateProject(ctx context.Context, project *app.CreateProjectRequest) (*app.Project, error) {
+func (r *ProjectRepository) CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error) {
 	sqliteProject := &Project{
 		Name: project.Name,
 	}
 	err := r.conn.WithContext(ctx).Create(sqliteProject).Error
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, fmt.Errorf("%w %w", app.ErrProjectAlreadyExists, err)
+		return nil, fmt.Errorf("%w %w", domain.ErrProjectAlreadyExists, err)
 	} else if err != nil {
 		return nil, err
 	}
-	return &app.Project{
+	return &domain.Project{
 		ID:   sqliteProject.ID,
 		Name: sqliteProject.Name,
 	}, nil

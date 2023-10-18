@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/inquiryproj/inquiry/internal/app"
+	"github.com/inquiryproj/inquiry/internal/repository/domain"
 )
 
 // Scenario is the sqlite model for scenarios.
@@ -26,7 +26,7 @@ type ScenarioRepository struct {
 }
 
 // CreateScenario creates a new scenario in sqlite.
-func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioRequest *app.CreateScenarioRequest) (*app.Scenario, error) {
+func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioRequest *domain.CreateScenarioRequest) (*domain.Scenario, error) {
 	sqliteScenario := &Scenario{
 		Name:      createScenarioRequest.Name,
 		SpecType:  string(createScenarioRequest.SpecType),
@@ -35,32 +35,32 @@ func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioR
 	}
 	err := r.conn.WithContext(ctx).Create(sqliteScenario).Error
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, fmt.Errorf("%w %w", app.ErrScenarioAlreadyExists, err)
+		return nil, fmt.Errorf("%w %w", domain.ErrScenarioAlreadyExists, err)
 	} else if err != nil {
 		return nil, err
 	}
-	return scenarioToAppScenario(sqliteScenario), nil
+	return scenarioToDomainScenario(sqliteScenario), nil
 }
 
 // GetForProject returns all scenarios for a given project.
-func (r *ScenarioRepository) GetForProject(ctx context.Context, getForProjectRequest *app.GetScenariosForProjectRequest) ([]*app.Scenario, error) {
+func (r *ScenarioRepository) GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error) {
 	scenarios := []*Scenario{}
 	err := r.conn.WithContext(ctx).Where("project_id = ?", getForProjectRequest.ProjectID).Find(&scenarios).Error
 	if err != nil {
 		return nil, err
 	}
-	result := []*app.Scenario{}
+	result := []*domain.Scenario{}
 	for _, scenario := range scenarios {
-		result = append(result, scenarioToAppScenario(scenario))
+		result = append(result, scenarioToDomainScenario(scenario))
 	}
 	return result, nil
 }
 
-func scenarioToAppScenario(scenario *Scenario) *app.Scenario {
-	return &app.Scenario{
+func scenarioToDomainScenario(scenario *Scenario) *domain.Scenario {
+	return &domain.Scenario{
 		ID:        scenario.ID,
 		Name:      scenario.Name,
-		SpecType:  app.ScenarioSpecType(scenario.SpecType),
+		SpecType:  domain.ScenarioSpecType(scenario.SpecType),
 		Spec:      scenario.Spec,
 		ProjectID: scenario.ProjectID,
 	}
