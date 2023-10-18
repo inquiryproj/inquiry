@@ -4,26 +4,34 @@ package repository
 import (
 	"context"
 
-	"github.com/inquiryproj/inquiry/internal/app"
+	"github.com/inquiryproj/inquiry/internal/repository/domain"
 	"github.com/inquiryproj/inquiry/internal/repository/sqlite"
 )
 
 // Wrapper wraps all repositories.
-type Wrapper interface {
-	Project
-	Scenario
+type Wrapper struct {
+	Project  Project
+	Scenario Scenario
+	Run      Run
 }
 
 // Project is the project repository.
 type Project interface {
-	GetProjects(ctx context.Context, getProjectsRequest *app.GetProjectsRequest) ([]*app.Project, error)
-	CreateProject(ctx context.Context, project *app.CreateProjectRequest) (*app.Project, error)
+	GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error)
+	CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error)
 }
 
 // Scenario is the scenario repository.
 type Scenario interface {
-	CreateScenario(ctx context.Context, scenario *app.CreateScenarioRequest) (*app.Scenario, error)
-	GetForProject(ctx context.Context, getForProjectRequest *app.GetScenariosForProjectRequest) ([]*app.Scenario, error)
+	CreateScenario(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error)
+	GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error)
+}
+
+// Run is the run repository.
+type Run interface {
+	CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error)
+	UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error)
+	GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error)
 }
 
 // Type is the type of repository.
@@ -75,7 +83,7 @@ func WithType(repositoryType string) Opts {
 }
 
 // NewWrapper initialises the repository wrapper.
-func NewWrapper(opts ...Opts) (Wrapper, error) {
+func NewWrapper(opts ...Opts) (*Wrapper, error) {
 	options := defaultOptions()
 	for _, o := range opts {
 		o(options)
@@ -89,10 +97,14 @@ func NewWrapper(opts ...Opts) (Wrapper, error) {
 }
 
 // NewSQLiteWrapper initialises sqlite repository implementation.
-func NewSQLiteWrapper(dsn string) (Wrapper, error) {
+func NewSQLiteWrapper(dsn string) (*Wrapper, error) {
 	sqliteRepository, err := sqlite.NewRepository(dsn)
 	if err != nil {
 		return nil, err
 	}
-	return sqliteRepository, nil
+	return &Wrapper{
+		Project:  sqliteRepository.ProjectRepository,
+		Scenario: sqliteRepository.ScenarioRepository,
+		Run:      sqliteRepository.RunRepository,
+	}, nil
 }

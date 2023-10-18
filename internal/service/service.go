@@ -38,7 +38,7 @@ type Runner interface {
 
 // NewServiceWrapper initialises all services.
 func NewServiceWrapper(
-	repositoryWrapper repository.Wrapper,
+	repositoryWrapper *repository.Wrapper,
 	runsProducer runs.Producer,
 	opts ...options.Opts,
 ) Wrapper {
@@ -47,8 +47,8 @@ func NewServiceWrapper(
 		*scenario.Scenario
 		*runner.Runner
 	}{
-		project.NewService(repositoryWrapper, opts...),
-		scenario.NewService(repositoryWrapper, opts...),
-		runner.NewService(repositoryWrapper, runsProducer, opts...),
+		project.NewService(repositoryWrapper.Project, opts...),
+		scenario.NewService(repositoryWrapper.Scenario, opts...),
+		runner.NewService(repositoryWrapper.Scenario, runsProducer, opts...),
 	}
 }

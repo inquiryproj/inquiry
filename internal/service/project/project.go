@@ -3,10 +3,12 @@ package project
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/repository"
+	"github.com/inquiryproj/inquiry/internal/repository/domain"
 	serviceOptions "github.com/inquiryproj/inquiry/internal/service/options"
 )
 
@@ -31,10 +33,39 @@ func NewService(projectRepository repository.Project, opts ...serviceOptions.Opt
 
 // GetProjects returns all projects.
 func (s *Project) GetProjects(ctx context.Context, getProjectsRequest *app.GetProjectsRequest) ([]*app.Project, error) {
-	return s.projectRepository.GetProjects(ctx, getProjectsRequest)
+	projects, err := s.projectRepository.GetProjects(ctx, &domain.GetProjectsRequest{
+		Limit:  getProjectsRequest.Limit,
+		Offset: getProjectsRequest.Offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return toAppProjects(projects), nil
+}
+
+func toAppProjects(projects []*domain.Project) []*app.Project {
+	appProjects := make([]*app.Project, len(projects))
+	for i, project := range projects {
+		appProjects[i] = &app.Project{
+			ID:   project.ID,
+			Name: project.Name,
+		}
+	}
+	return appProjects
 }
 
 // CreateProject creates a new project.
-func (s *Project) CreateProject(ctx context.Context, project *app.CreateProjectRequest) (*app.Project, error) {
-	return s.projectRepository.CreateProject(ctx, project)
+func (s *Project) CreateProject(ctx context.Context, createProjectRequest *app.CreateProjectRequest) (*app.Project, error) {
+	project, err := s.projectRepository.CreateProject(ctx, &domain.CreateProjectRequest{
+		Name: createProjectRequest.Name,
+	})
+	if errors.Is(err, domain.ErrProjectAlreadyExists) {
+		return nil, app.ErrProjectAlreadyExists
+	} else if err != nil {
+		return nil, err
+	}
+	return &app.Project{
+		ID:   project.ID,
+		Name: project.Name,
+	}, nil
 }

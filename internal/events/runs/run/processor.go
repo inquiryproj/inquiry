@@ -13,6 +13,7 @@ import (
 	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/executor"
 	"github.com/inquiryproj/inquiry/internal/repository"
+	"github.com/inquiryproj/inquiry/internal/repository/domain"
 )
 
 // Processor processes runs.
@@ -38,7 +39,7 @@ func NewProcessor(scenarioRepository repository.Scenario) Processor {
 // Process processes a run for a given project ID.
 func (p *processor) Process(projectID uuid.UUID) (*app.ProjectRunOutput, error) {
 	p.logger.Info("processing project", slog.String("project_id", projectID.String()))
-	scenarios, err := p.scenarioRepository.GetForProject(context.Background(), &app.GetScenariosForProjectRequest{
+	scenarios, err := p.scenarioRepository.GetForProject(context.Background(), &domain.GetScenariosForProjectRequest{
 		ProjectID: projectID,
 	})
 	if err != nil {
