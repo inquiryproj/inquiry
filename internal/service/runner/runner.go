@@ -56,3 +56,27 @@ func (s *Runner) RunProject(ctx context.Context, runProjectRequest *app.RunProje
 	}
 	return &app.ProjectRunOutput{}, nil
 }
+
+// GetRunsForProject returns runs for a given project, limit and offset.
+func (s *Runner) GetRunsForProject(ctx context.Context, getRunsForProjectRequest *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error) {
+	res, err := s.runRepository.GetForProject(ctx, &domain.GetRunsForProjectRequest{
+		ProjectID: getRunsForProjectRequest.ProjectID,
+		Limit:     getRunsForProjectRequest.Limit,
+		Offset:    getRunsForProjectRequest.Offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+	projectRunOutputs := make([]*app.ProjectRunOutput, len(res))
+	for i, run := range res {
+		projectRunOutputs[i] = &app.ProjectRunOutput{
+			ID:        run.ID,
+			ProjectID: run.ProjectID,
+			Success:   run.Success,
+			State:     app.RunState(run.State),
+		}
+	}
+	return &app.GetRunsForProjectResponse{
+		Runs: projectRunOutputs,
+	}, nil
+}

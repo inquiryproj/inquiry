@@ -7,6 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// Defines values for ProjectRunOutputState.
+const (
+	Cancelled ProjectRunOutputState = "cancelled"
+	Failure   ProjectRunOutputState = "failure"
+	Pending   ProjectRunOutputState = "pending"
+	Running   ProjectRunOutputState = "running"
+	Success   ProjectRunOutputState = "success"
+)
+
 // ErrMsg defines model for ErrMsg.
 type ErrMsg struct {
 	Message string `json:"message"`
@@ -23,9 +32,17 @@ type ProjectArray = []Project
 
 // ProjectRunOutput defines model for ProjectRunOutput.
 type ProjectRunOutput struct {
-	ID        uuid.UUID `json:"id"`
-	ProjectID uuid.UUID `json:"project_id"`
+	ID        uuid.UUID             `json:"id"`
+	ProjectID uuid.UUID             `json:"project_id"`
+	State     ProjectRunOutputState `json:"state"`
+	Success   bool                  `json:"success"`
 }
+
+// ProjectRunOutputState defines model for ProjectRunOutput.State.
+type ProjectRunOutputState string
+
+// ProjectRunOutputArray defines model for ProjectRunOutputArray.
+type ProjectRunOutputArray = []ProjectRunOutput
 
 // Scenario defines model for Scenario.
 type Scenario struct {
@@ -42,6 +59,15 @@ type ListProjectsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset The number of projects to skip
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// GetRunsForProjectParams defines parameters for GetRunsForProject.
+type GetRunsForProjectParams struct {
+	// Limit The number of runs to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset The number of runs to skip
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 

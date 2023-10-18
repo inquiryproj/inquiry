@@ -63,4 +63,6 @@ type UpdateRunRequest struct {
 // GetRunsForProjectRequest is the request to get runs for a project.
 type GetRunsForProjectRequest struct {
 	ProjectID uuid.UUID
+	Limit     int
+	Offset    int
 }

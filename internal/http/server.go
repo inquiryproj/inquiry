@@ -24,6 +24,9 @@ type ServerInterface interface {
 	// (POST /v1/projects/{id}/run)
 	RunProject(ctx echo.Context, id uuid.UUID) error
 
+	// (GET /v1/projects/{id}/runs)
+	GetRunsForProject(ctx echo.Context, id uuid.UUID, params GetRunsForProjectParams) error
+
 	// (POST /v1/projects/{id}/scenarios)
 	CreateScenario(ctx echo.Context, id uuid.UUID) error
 }
@@ -83,6 +86,38 @@ func (w *ServerInterfaceWrapper) RunProject(ctx echo.Context) error {
 	return err
 }
 
+// GetRunsForProject converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRunsForProject(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id uuid.UUID
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRunsForProjectParams
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetRunsForProject(ctx, id, params)
+	return err
+}
+
 // CreateScenario converts echo context to params.
 func (w *ServerInterfaceWrapper) CreateScenario(ctx echo.Context) error {
 	var err error
@@ -130,6 +165,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/v1/projects", wrapper.ListProjects)
 	router.POST(baseURL+"/v1/projects", wrapper.CreateProject)
 	router.POST(baseURL+"/v1/projects/:id/run", wrapper.RunProject)
+	router.GET(baseURL+"/v1/projects/:id/runs", wrapper.GetRunsForProject)
 	router.POST(baseURL+"/v1/projects/:id/scenarios", wrapper.CreateScenario)
 
 }

@@ -69,8 +69,9 @@ func (r *RunRepository) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, 
 // CreateRun creates a new run in sqlite.
 func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
 	run := &Run{
-		ProjectID: createRunRequest.ProjectID,
-		State:     RunStatePending,
+		ProjectID:   createRunRequest.ProjectID,
+		State:       RunStatePending,
+		StepDetails: []byte(`{}`),
 	}
 	err := r.conn.WithContext(ctx).Create(run).Error
 	if err != nil {
@@ -138,7 +139,14 @@ func domainStepsToSteps(steps []*domain.StepRunDetails) []*Step {
 // GetForProject returns all runs for a given project.
 func (r *RunRepository) GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error) {
 	runs := []*Run{}
-	err := r.conn.WithContext(ctx).Where("project_id = ?", getForProjectRequest.ProjectID).Find(&runs).Error
+	err := r.conn.
+		WithContext(ctx).
+		Offset(getForProjectRequest.Limit*getForProjectRequest.Offset).
+		Limit(getForProjectRequest.Limit).
+		Where("project_id = ?", getForProjectRequest.ProjectID).
+		Order("created_at desc").
+		Find(&runs).
+		Error
 	if err != nil {
 		return nil, err
 	}
