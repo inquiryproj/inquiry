@@ -112,7 +112,7 @@ func (r *runnableConsumer) Name() string {
 }
 
 func processorFactory(repositoryWrapper *repository.Wrapper) run.Processor {
-	return run.NewProcessor(repositoryWrapper.Scenario)
+	return run.NewProcessor(repositoryWrapper.Scenario, repositoryWrapper.Run)
 }
 
 func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer runs.Producer) service.Wrapper {

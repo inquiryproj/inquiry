@@ -49,6 +49,6 @@ func NewServiceWrapper(
 	}{
 		project.NewService(repositoryWrapper.Project, opts...),
 		scenario.NewService(repositoryWrapper.Scenario, opts...),
-		runner.NewService(repositoryWrapper.Scenario, runsProducer, opts...),
+		runner.NewService(repositoryWrapper.Scenario, repositoryWrapper.Run, runsProducer, opts...),
 	}
 }

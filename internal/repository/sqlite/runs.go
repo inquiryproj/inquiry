@@ -56,10 +56,21 @@ type RunRepository struct {
 	conn *gorm.DB
 }
 
+// GetRun returns a run from sqlite.
+func (r *RunRepository) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
+	run := Run{}
+	err := r.conn.Model(&Run{}).WithContext(ctx).Where("id = ?", id).First(&run).Error
+	if err != nil {
+		return nil, err
+	}
+	return runToDomainRun(&run)
+}
+
 // CreateRun creates a new run in sqlite.
 func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
 	run := &Run{
 		ProjectID: createRunRequest.ProjectID,
+		State:     RunStatePending,
 	}
 	err := r.conn.WithContext(ctx).Create(run).Error
 	if err != nil {
@@ -98,6 +109,9 @@ func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.
 }
 
 func domainScenarioToScenario(scenario *domain.ScenarioRunDetails) *ScenarioDetails {
+	if scenario == nil {
+		return &ScenarioDetails{}
+	}
 	return &ScenarioDetails{
 		Duration:   scenario.Duration,
 		Assertions: scenario.Assertions,
