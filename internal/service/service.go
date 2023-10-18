@@ -34,6 +34,7 @@ type Scenario interface {
 // Runner is the runner service.
 type Runner interface {
 	RunProject(ctx context.Context, run *app.RunProjectRequest) (*app.ProjectRunOutput, error)
+	GetRunsForProject(ctx context.Context, getRunsForProjectRequest *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error)
 }
 
 // NewServiceWrapper initialises all services.

@@ -70,6 +70,7 @@ components:
         - id
         - project_id
         - success
+        - state
       properties:
         id:
           x-go-type: uuid.UUID
@@ -77,12 +78,19 @@ components:
           x-go-type-import:
             path: github.com/google/uuid
         project_id:
-          x-go-type: uuid.UUID
+          x-go-type: uuid.UUID 
           x-go-name: ProjectID
           x-go-type-import:
             path: github.com/google/uuid
-      spec_type: 
+        success: 
           type: boolean
+        state:
+          type: string
+          enum: [pending, running, success, failure, cancelled]
+    ProjectRunOutputArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/ProjectRunOutput'
     ErrMsg:
       type: object
       required:
@@ -213,6 +221,49 @@ paths:
           description: The scenarios for the project ran successfully.
         default:
           description: Something went wrong while running the scenarios
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
+  "/v1/projects/{id}/runs":
+    get:
+      description: Retrieves all runs for a given project
+      operationId: getRunsForProject
+      tags:
+        - projects
+        - run
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-name: ID
+            x-go-type-import:
+              path: github.com/google/uuid
+          required: true
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 250
+          description: The number of runs to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: The number of runs to skip
+      responses: 
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRunOutputArray"
+          description: Runs for a given project.
+        default:
+          description: Something went wrong while retrieving the runs
           content:
             application/json:
               schema:

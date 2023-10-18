@@ -17,6 +17,15 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Defines values for ProjectRunOutputState.
+const (
+	Cancelled ProjectRunOutputState = "cancelled"
+	Failure   ProjectRunOutputState = "failure"
+	Pending   ProjectRunOutputState = "pending"
+	Running   ProjectRunOutputState = "running"
+	Success   ProjectRunOutputState = "success"
+)
+
 // ErrMsg defines model for ErrMsg.
 type ErrMsg struct {
 	Message string `json:"message"`
@@ -33,9 +42,17 @@ type ProjectArray = []Project
 
 // ProjectRunOutput defines model for ProjectRunOutput.
 type ProjectRunOutput struct {
-	ID        uuid.UUID `json:"id"`
-	ProjectID uuid.UUID `json:"project_id"`
+	ID        uuid.UUID             `json:"id"`
+	ProjectID uuid.UUID             `json:"project_id"`
+	State     ProjectRunOutputState `json:"state"`
+	Success   bool                  `json:"success"`
 }
+
+// ProjectRunOutputState defines model for ProjectRunOutput.State.
+type ProjectRunOutputState string
+
+// ProjectRunOutputArray defines model for ProjectRunOutputArray.
+type ProjectRunOutputArray = []ProjectRunOutput
 
 // Scenario defines model for Scenario.
 type Scenario struct {
@@ -52,6 +69,15 @@ type ListProjectsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset The number of projects to skip
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// GetRunsForProjectParams defines parameters for GetRunsForProject.
+type GetRunsForProjectParams struct {
+	// Limit The number of runs to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset The number of runs to skip
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
@@ -145,6 +171,9 @@ type ClientInterface interface {
 	// RunProject request
 	RunProject(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetRunsForProject request
+	GetRunsForProject(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateScenarioWithBody request with any body
 	CreateScenarioWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -189,6 +218,18 @@ func (c *Client) CreateProject(ctx context.Context, body CreateProjectJSONReques
 
 func (c *Client) RunProject(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRunProjectRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRunsForProject(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRunsForProjectRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -362,6 +403,78 @@ func NewRunProjectRequest(server string, id uuid.UUID) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetRunsForProjectRequest generates requests for GetRunsForProject
+func NewGetRunsForProjectRequest(server string, id uuid.UUID, params *GetRunsForProjectParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/runs", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateScenarioRequest calls the generic CreateScenario builder with application/json body
 func NewCreateScenarioRequest(server string, id uuid.UUID, body CreateScenarioJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -463,6 +576,9 @@ type ClientWithResponsesInterface interface {
 	// RunProjectWithResponse request
 	RunProjectWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*RunProjectResponse, error)
 
+	// GetRunsForProjectWithResponse request
+	GetRunsForProjectWithResponse(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*GetRunsForProjectResponse, error)
+
 	// CreateScenarioWithBodyWithResponse request with any body
 	CreateScenarioWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
 
@@ -538,6 +654,29 @@ func (r RunProjectResponse) StatusCode() int {
 	return 0
 }
 
+type GetRunsForProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectRunOutputArray
+	JSONDefault  *ErrMsg
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRunsForProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRunsForProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateScenarioResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -594,6 +733,15 @@ func (c *ClientWithResponses) RunProjectWithResponse(ctx context.Context, id uui
 		return nil, err
 	}
 	return ParseRunProjectResponse(rsp)
+}
+
+// GetRunsForProjectWithResponse request returning *GetRunsForProjectResponse
+func (c *ClientWithResponses) GetRunsForProjectWithResponse(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*GetRunsForProjectResponse, error) {
+	rsp, err := c.GetRunsForProject(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRunsForProjectResponse(rsp)
 }
 
 // CreateScenarioWithBodyWithResponse request with arbitrary body returning *CreateScenarioResponse
@@ -695,6 +843,39 @@ func ParseRunProjectResponse(rsp *http.Response) (*RunProjectResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ProjectRunOutput
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ErrMsg
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetRunsForProjectResponse parses an HTTP response from a GetRunsForProjectWithResponse call
+func ParseGetRunsForProjectResponse(rsp *http.Response) (*GetRunsForProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRunsForProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectRunOutputArray
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

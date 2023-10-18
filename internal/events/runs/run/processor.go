@@ -66,8 +66,9 @@ func (p *processor) Process(runID uuid.UUID) (*app.ProjectRunOutput, error) {
 	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()))
 
 	_, err = p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
-		ID:    runID,
-		State: domain.RunStateSuccess,
+		ID:      runID,
+		State:   domain.RunStateSuccess,
+		Success: true,
 	})
 
 	return nil, err
