@@ -71,6 +71,7 @@ components:
         - project_id
         - success
         - state
+        - scenario_run_details
       properties:
         id:
           x-go-type: uuid.UUID
@@ -87,10 +88,49 @@ components:
         state:
           type: string
           enum: [pending, running, success, failure, cancelled]
+        scenario_run_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScenarioRunDetails'
     ProjectRunOutputArray:
       type: array
       items:
         $ref: '#/components/schemas/ProjectRunOutput'
+    ScenarioRunDetails:
+      type: object
+      required:
+        - duration_in_ms
+        - assertions
+        - success
+        - steps
+      properties:
+        duration_in_ms:
+          type: integer
+        assertions:
+          type: integer
+        success:
+          type: boolean
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepRunDetails'
+    StepRunDetails:
+      type: object
+      required:
+        - name
+        - assertions
+        - duration_in_ms
+        - success
+      properties:
+        name:
+          type: string
+        assertions:
+          type: integer
+        duration_in_ms:
+          type: integer
+        success:
+          type: boolean
+        
     ErrMsg:
       type: object
       required:

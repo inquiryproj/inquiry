@@ -42,7 +42,7 @@ func main() {
 		logger.Error("unable to create test scenario executor", err)
 		return
 	}
-	err = executorApp.Play()
+	_, err = executorApp.Play()
 	if err != nil {
 		logger.Error(err.Error())
 		return

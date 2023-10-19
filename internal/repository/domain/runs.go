@@ -25,7 +25,7 @@ type Run struct {
 	Success            bool
 	State              RunState
 	ErrorMessage       string
-	ScenarioRunDetails *ScenarioRunDetails
+	ScenarioRunDetails []*ScenarioRunDetails
 }
 
 // ScenarioRunDetails is the domain model for scenario run details.
@@ -33,17 +33,18 @@ type ScenarioRunDetails struct {
 	Duration   time.Duration
 	Assertions int
 	Steps      []*StepRunDetails
+	Success    bool
 }
 
 // StepRunDetails is the domain model for scenario step run details.
 type StepRunDetails struct {
-	Name             string
-	Assertions       int
-	FailedAssertions int
-	URL              string
-	RequestDuration  time.Duration
-	Duration         time.Duration
-	Retries          int
+	Name            string
+	Assertions      int
+	URL             string
+	RequestDuration time.Duration
+	Duration        time.Duration
+	Retries         int
+	Success         bool
 }
 
 // CreateRunRequest is the request to create a run.
@@ -57,7 +58,7 @@ type UpdateRunRequest struct {
 	Success            bool
 	State              RunState
 	ErrorMessage       string
-	ScenarioRunDetails *ScenarioRunDetails
+	ScenarioRunDetails []*ScenarioRunDetails
 }
 
 // GetRunsForProjectRequest is the request to get runs for a project.

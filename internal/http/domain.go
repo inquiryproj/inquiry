@@ -32,10 +32,11 @@ type ProjectArray = []Project
 
 // ProjectRunOutput defines model for ProjectRunOutput.
 type ProjectRunOutput struct {
-	ID        uuid.UUID             `json:"id"`
-	ProjectID uuid.UUID             `json:"project_id"`
-	State     ProjectRunOutputState `json:"state"`
-	Success   bool                  `json:"success"`
+	ID                 uuid.UUID             `json:"id"`
+	ProjectID          uuid.UUID             `json:"project_id"`
+	ScenarioRunDetails []ScenarioRunDetails  `json:"scenario_run_details"`
+	State              ProjectRunOutputState `json:"state"`
+	Success            bool                  `json:"success"`
 }
 
 // ProjectRunOutputState defines model for ProjectRunOutput.State.
@@ -51,6 +52,22 @@ type Scenario struct {
 	ProjectID uuid.UUID `json:"project_id"`
 	Spec      string    `json:"spec"`
 	SpecType  string    `json:"spec_type"`
+}
+
+// ScenarioRunDetails defines model for ScenarioRunDetails.
+type ScenarioRunDetails struct {
+	Assertions   int              `json:"assertions"`
+	DurationInMs int              `json:"duration_in_ms"`
+	Steps        []StepRunDetails `json:"steps"`
+	Success      bool             `json:"success"`
+}
+
+// StepRunDetails defines model for StepRunDetails.
+type StepRunDetails struct {
+	Assertions   int    `json:"assertions"`
+	DurationInMs int    `json:"duration_in_ms"`
+	Name         string `json:"name"`
+	Success      bool   `json:"success"`
 }
 
 // ListProjectsParams defines parameters for ListProjects.
