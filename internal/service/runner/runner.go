@@ -70,13 +70,43 @@ func (s *Runner) GetRunsForProject(ctx context.Context, getRunsForProjectRequest
 	projectRunOutputs := make([]*app.ProjectRunOutput, len(res))
 	for i, run := range res {
 		projectRunOutputs[i] = &app.ProjectRunOutput{
-			ID:        run.ID,
-			ProjectID: run.ProjectID,
-			Success:   run.Success,
-			State:     app.RunState(run.State),
+			ID:                 run.ID,
+			ProjectID:          run.ProjectID,
+			Success:            run.Success,
+			State:              app.RunState(run.State),
+			ScenarioRunDetails: scenarioRunDetailsToAppScenarioRunDetails(run.ScenarioRunDetails),
 		}
 	}
 	return &app.GetRunsForProjectResponse{
 		Runs: projectRunOutputs,
 	}, nil
+}
+
+func scenarioRunDetailsToAppScenarioRunDetails(scenario []*domain.ScenarioRunDetails) []*app.ScenarioRunDetails {
+	result := []*app.ScenarioRunDetails{}
+	for _, detail := range scenario {
+		result = append(result, &app.ScenarioRunDetails{
+			Duration:   detail.Duration,
+			Assertions: detail.Assertions,
+			Steps:      stepsRunDetailsToAppStepRunDetails(detail.Steps),
+			Success:    detail.Success,
+		})
+	}
+	return result
+}
+
+func stepsRunDetailsToAppStepRunDetails(steps []*domain.StepRunDetails) []*app.StepRunDetails {
+	result := []*app.StepRunDetails{}
+	for _, detail := range steps {
+		result = append(result, &app.StepRunDetails{
+			Name:            detail.Name,
+			Assertions:      detail.Assertions,
+			URL:             detail.URL,
+			RequestDuration: detail.RequestDuration,
+			Duration:        detail.Duration,
+			Retries:         detail.Retries,
+			Success:         detail.Success,
+		})
+	}
+	return result
 }

@@ -56,12 +56,39 @@ func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params ht
 	result := make([]httpInternal.ProjectRunOutput, len(runs.Runs))
 	for i, run := range runs.Runs {
 		result[i] = httpInternal.ProjectRunOutput{
-			ID:        run.ID,
-			ProjectID: run.ProjectID,
-			Success:   run.Success,
-			State:     httpInternal.ProjectRunOutputState(run.State),
+			ID:                 run.ID,
+			ProjectID:          run.ProjectID,
+			Success:            run.Success,
+			State:              httpInternal.ProjectRunOutputState(run.State),
+			ScenarioRunDetails: appScenarioDetailsToHTTPScenarioDetails(run.ScenarioRunDetails),
 		}
 	}
 
 	return ctx.JSON(http.StatusOK, result)
+}
+
+func appScenarioDetailsToHTTPScenarioDetails(scenario []*app.ScenarioRunDetails) []httpInternal.ScenarioRunDetails {
+	result := []httpInternal.ScenarioRunDetails{}
+	for _, detail := range scenario {
+		result = append(result, httpInternal.ScenarioRunDetails{
+			DurationInMs: int(detail.Duration.Milliseconds()),
+			Assertions:   detail.Assertions,
+			Steps:        appStepsRunDetailsToHTTPStepRunDetails(detail.Steps),
+			Success:      detail.Success,
+		})
+	}
+	return result
+}
+
+func appStepsRunDetailsToHTTPStepRunDetails(steps []*app.StepRunDetails) []httpInternal.StepRunDetails {
+	result := []httpInternal.StepRunDetails{}
+	for _, detail := range steps {
+		result = append(result, httpInternal.StepRunDetails{
+			Name:         detail.Name,
+			Assertions:   detail.Assertions,
+			DurationInMs: int(detail.Duration.Milliseconds()),
+			Success:      detail.Success,
+		})
+	}
+	return result
 }

@@ -19,7 +19,7 @@ var (
 
 // App is the interface for the test executor app.
 type App interface {
-	Play() error
+	Play() (*http.ExecuteResult, error)
 }
 
 type options struct {
@@ -72,14 +72,14 @@ func New(name string, opts ...Opts) (App, error) {
 }
 
 type scenarioExecutor interface {
-	Play() error
+	Play() (*http.ExecuteResult, error)
 }
 
 type app struct {
 	scenarioExecutor scenarioExecutor
 }
 
-func (a *app) Play() error {
+func (a *app) Play() (*http.ExecuteResult, error) {
 	return a.scenarioExecutor.Play()
 }
 

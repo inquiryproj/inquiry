@@ -28,27 +28,28 @@ type ScenarioDetails struct {
 	Duration   time.Duration `json:"duration"`
 	Assertions int           `json:"assertions"`
 	Steps      []*Step       `json:"steps"`
+	Success    bool          `json:"success"`
 }
 
 // Step is the json model for scenario step run details.
 type Step struct {
-	Name             string        `json:"name"`
-	Assertions       int           `json:"assertions"`
-	FailedAssertions int           `json:"failed_assertions"`
-	URL              string        `json:"url"`
-	RequestDuration  time.Duration `json:"request_duration"`
-	Duration         time.Duration `json:"duration"`
-	Retries          int           `json:"retries"`
+	Name            string        `json:"name"`
+	Assertions      int           `json:"assertions"`
+	URL             string        `json:"url"`
+	RequestDuration time.Duration `json:"request_duration"`
+	Duration        time.Duration `json:"duration"`
+	Retries         int           `json:"retries"`
+	Success         bool          `json:"success"`
 }
 
 // Run is the sqlite model for runs.
 type Run struct {
 	BaseModel
-	ProjectID    uuid.UUID `gorm:"type:uuid;index:idx_project_id"`
-	Success      bool
-	State        RunState
-	ErrorMessage string
-	StepDetails  []byte
+	ProjectID       uuid.UUID `gorm:"type:uuid;index:idx_project_id"`
+	Success         bool
+	State           RunState
+	ErrorMessage    string
+	ScenarioDetails []byte
 }
 
 // RunRepository is the sqlite repository for runs.
@@ -69,9 +70,9 @@ func (r *RunRepository) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, 
 // CreateRun creates a new run in sqlite.
 func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
 	run := &Run{
-		ProjectID:   createRunRequest.ProjectID,
-		State:       RunStatePending,
-		StepDetails: []byte(`{}`),
+		ProjectID:       createRunRequest.ProjectID,
+		State:           RunStatePending,
+		ScenarioDetails: []byte(`{}`),
 	}
 	err := r.conn.WithContext(ctx).Create(run).Error
 	if err != nil {
@@ -94,12 +95,12 @@ func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.
 	run.State = RunState(updateRunRequest.State)
 	run.ErrorMessage = updateRunRequest.ErrorMessage
 
-	scenarioDetails := domainScenarioToScenario(updateRunRequest.ScenarioRunDetails)
+	scenarioDetails := domainScenariosToScenarios(updateRunRequest.ScenarioRunDetails)
 	b, err := json.Marshal(scenarioDetails)
 	if err != nil {
 		return nil, err
 	}
-	run.StepDetails = b
+	run.ScenarioDetails = b
 
 	err = r.conn.WithContext(ctx).Save(&run).Error
 	if err != nil {
@@ -107,6 +108,14 @@ func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.
 	}
 
 	return runToDomainRun(&run)
+}
+
+func domainScenariosToScenarios(scenarios []*domain.ScenarioRunDetails) []*ScenarioDetails {
+	result := []*ScenarioDetails{}
+	for _, scenario := range scenarios {
+		result = append(result, domainScenarioToScenario(scenario))
+	}
+	return result
 }
 
 func domainScenarioToScenario(scenario *domain.ScenarioRunDetails) *ScenarioDetails {
@@ -117,6 +126,7 @@ func domainScenarioToScenario(scenario *domain.ScenarioRunDetails) *ScenarioDeta
 		Duration:   scenario.Duration,
 		Assertions: scenario.Assertions,
 		Steps:      domainStepsToSteps(scenario.Steps),
+		Success:    scenario.Success,
 	}
 }
 
@@ -124,13 +134,13 @@ func domainStepsToSteps(steps []*domain.StepRunDetails) []*Step {
 	result := []*Step{}
 	for _, step := range steps {
 		result = append(result, &Step{
-			Name:             step.Name,
-			Assertions:       step.Assertions,
-			FailedAssertions: step.FailedAssertions,
-			URL:              step.URL,
-			RequestDuration:  step.RequestDuration,
-			Duration:         step.Duration,
-			Retries:          step.Retries,
+			Name:            step.Name,
+			Assertions:      step.Assertions,
+			URL:             step.URL,
+			RequestDuration: step.RequestDuration,
+			Duration:        step.Duration,
+			Retries:         step.Retries,
+			Success:         step.Success,
 		})
 	}
 	return result
@@ -162,7 +172,7 @@ func (r *RunRepository) GetForProject(ctx context.Context, getForProjectRequest 
 }
 
 func runToDomainRun(run *Run) (*domain.Run, error) {
-	scenarioRunDetails, err := scenarioRunDetailsToDomainScenarioRunDetails(run.StepDetails)
+	scenarioRunDetails, err := scenarioRunDetailsToDomainScenarioRunDetails(run.ScenarioDetails)
 	if err != nil {
 		return nil, err
 	}
@@ -176,30 +186,35 @@ func runToDomainRun(run *Run) (*domain.Run, error) {
 	}, nil
 }
 
-func scenarioRunDetailsToDomainScenarioRunDetails(scenario []byte) (*domain.ScenarioRunDetails, error) {
-	details := &ScenarioDetails{}
-	err := json.Unmarshal(scenario, details)
+func scenarioRunDetailsToDomainScenarioRunDetails(scenario []byte) ([]*domain.ScenarioRunDetails, error) {
+	details := []*ScenarioDetails{}
+	err := json.Unmarshal(scenario, &details)
 	if err != nil {
 		return nil, err
 	}
-	return &domain.ScenarioRunDetails{
-		Duration:   details.Duration,
-		Assertions: details.Assertions,
-		Steps:      stepsRunDetailsToDomainStepRunDetails(details.Steps),
-	}, nil
+	result := []*domain.ScenarioRunDetails{}
+	for _, detail := range details {
+		result = append(result, &domain.ScenarioRunDetails{
+			Duration:   detail.Duration,
+			Assertions: detail.Assertions,
+			Steps:      stepsRunDetailsToDomainStepRunDetails(detail.Steps),
+			Success:    detail.Success,
+		})
+	}
+	return result, nil
 }
 
 func stepsRunDetailsToDomainStepRunDetails(steps []*Step) []*domain.StepRunDetails {
 	result := []*domain.StepRunDetails{}
 	for _, step := range steps {
 		result = append(result, &domain.StepRunDetails{
-			Name:             step.Name,
-			Assertions:       step.Assertions,
-			FailedAssertions: step.FailedAssertions,
-			URL:              step.URL,
-			RequestDuration:  step.RequestDuration,
-			Duration:         step.Duration,
-			Retries:          step.Retries,
+			Name:            step.Name,
+			Assertions:      step.Assertions,
+			URL:             step.URL,
+			RequestDuration: step.RequestDuration,
+			Duration:        step.Duration,
+			Retries:         step.Retries,
+			Success:         step.Success,
 		})
 	}
 	return result

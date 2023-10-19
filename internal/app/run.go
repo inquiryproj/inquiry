@@ -1,7 +1,11 @@
 // Package app declares the domain models.
 package app
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // RunProjectRequest requests model for running a project.
 type RunProjectRequest struct {
@@ -22,10 +26,30 @@ const (
 
 // ProjectRunOutput is the output of a project run.
 type ProjectRunOutput struct {
-	ID        uuid.UUID
-	ProjectID uuid.UUID
-	Success   bool
-	State     RunState
+	ID                 uuid.UUID
+	ProjectID          uuid.UUID
+	Success            bool
+	State              RunState
+	ScenarioRunDetails []*ScenarioRunDetails
+}
+
+// ScenarioRunDetails is the output of a scenario run.
+type ScenarioRunDetails struct {
+	Duration   time.Duration
+	Assertions int
+	Steps      []*StepRunDetails
+	Success    bool
+}
+
+// StepRunDetails is the output of a step run.
+type StepRunDetails struct {
+	Name            string
+	Assertions      int
+	URL             string
+	RequestDuration time.Duration
+	Duration        time.Duration
+	Retries         int
+	Success         bool
 }
 
 // GetRunsForProjectRequest requests model for getting runs for a project.
