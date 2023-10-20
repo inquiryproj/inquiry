@@ -43,6 +43,7 @@ func (e ErrJSONKeyNotFound) Error() string {
 
 // ExecuteResult is the result of executing a scenario.
 type ExecuteResult struct {
+	Name               string
 	TotalExecutionTime time.Duration
 	TotalAssertions    int
 	StepResults        []*ExecuteStepResult
@@ -51,32 +52,31 @@ type ExecuteResult struct {
 
 // ExecuteStepResult is the result of executing a step.
 type ExecuteStepResult struct {
-	Name             string
-	Assertions       int
-	FailedAssertions int
-	URL              string
-	RequestDuration  time.Duration
-	Duration         time.Duration
-	Retries          int
-	Success          bool
+	Name            string
+	Assertions      int
+	URL             string
+	RequestDuration time.Duration
+	Duration        time.Duration
+	Retries         int
+	Success         bool
 }
 
 // Play executes the scenario.
 func (e Executor) Play() (*ExecuteResult, error) {
-	executeResult := &ExecuteResult{}
+	executeResult := &ExecuteResult{
+		Name: e.scenario.Name,
+	}
 	start := time.Now()
 	totalAssertions := 0
-	success := false
+	success := true
 	for _, step := range e.scenario.Steps {
-		start := time.Now()
 		stepResult, err := e.playStep(step)
-		if err != nil {
-			return nil, fmt.Errorf("scenario %s %w", e.scenario.Name, err)
-		}
 		totalAssertions += stepResult.Assertions
 		success = stepResult.Success && success
 		executeResult.StepResults = append(executeResult.StepResults, stepResult)
-		e.scenarioMetrics.TotalExecutionTime = time.Since(start)
+		if err != nil {
+			break
+		}
 	}
 	executeResult.TotalExecutionTime = time.Since(start)
 	executeResult.TotalAssertions = totalAssertions
@@ -88,7 +88,7 @@ func (e Executor) Play() (*ExecuteResult, error) {
 func (e Executor) playStep(step *Step) (*ExecuteStepResult, error) {
 	err := e.replaceDynamicInputs(step)
 	if err != nil {
-		return nil, err
+		return &ExecuteStepResult{}, err
 	}
 
 	retries := 0
@@ -101,11 +101,9 @@ func (e Executor) playStep(step *Step) (*ExecuteStepResult, error) {
 	}
 	start := time.Now()
 	stepResult, err := e.executeWithRetries(retries, timeout, step)
-	if err != nil {
-		return nil, err
-	}
+
 	stepResult.Duration = time.Since(start)
-	return stepResult, nil
+	return stepResult, err
 }
 
 func (e Executor) executeWithRetries(retries int, timeout time.Duration, step *Step) (*ExecuteStepResult, error) {
@@ -113,14 +111,9 @@ func (e Executor) executeWithRetries(retries int, timeout time.Duration, step *S
 	if step.Retry != nil {
 		retriesLeft = step.Retry.Attempts - retries
 	}
-	stepResult := &ExecuteStepResult{
-		Name:       step.Name,
-		Retries:    retriesLeft,
-		URL:        step.Request.URL,
-		Assertions: len(step.Validation.Body) + len(step.Validation.Headers) + 1,
-		Success:    false,
-	}
-	err := e.executeAndValidate(step)
+
+	stepResult, err := e.executeAndValidate(step)
+	stepResult.Retries = retriesLeft
 	if retries <= 0 {
 		return stepResult, err
 	}
@@ -129,18 +122,29 @@ func (e Executor) executeWithRetries(retries int, timeout time.Duration, step *S
 		time.Sleep(timeout)
 		return e.executeWithRetries(retries-1, timeout, step)
 	}
-	stepResult.Success = true
 
 	return stepResult, nil
 }
 
-func (e Executor) executeAndValidate(step *Step) error {
+func (e Executor) executeAndValidate(step *Step) (*ExecuteStepResult, error) {
+	stepResult := &ExecuteStepResult{
+		Name:       step.Name,
+		URL:        step.Request.URL,
+		Assertions: len(step.Validation.Body) + len(step.Validation.Headers) + 1,
+		Success:    false,
+	}
+	start := time.Now()
 	requestResult, err := step.executeRequest(e.httpClient)
+	stepResult.RequestDuration = time.Since(start)
 	if err != nil {
-		return err
+		return stepResult, err
 	}
 
-	return step.validate(requestResult)
+	err = step.validate(requestResult)
+	if err == nil {
+		stepResult.Success = true
+	}
+	return stepResult, nil
 }
 
 func (e Executor) replaceDynamicInputs(step *Step) error {

@@ -31,7 +31,7 @@ func newScenarioHandler(scenarioService service.Scenario, options *Options) *Sce
 
 // CreateScenario create a scenario for a project.
 func (h *ScenarioHandler) CreateScenario(ctx echo.Context, id uuid.UUID) error {
-	httpScenario := &httpInternal.Scenario{}
+	httpScenario := &httpInternal.CreateScenarioJSONRequestBody{}
 	err := json.NewDecoder(ctx.Request().Body).Decode(&httpScenario)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid create scenario payload")

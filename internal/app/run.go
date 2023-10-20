@@ -35,6 +35,7 @@ type ProjectRunOutput struct {
 
 // ScenarioRunDetails is the output of a scenario run.
 type ScenarioRunDetails struct {
+	Name       string
 	Duration   time.Duration
 	Assertions int
 	Steps      []*StepRunDetails

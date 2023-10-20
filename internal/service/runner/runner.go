@@ -86,6 +86,7 @@ func scenarioRunDetailsToAppScenarioRunDetails(scenario []*domain.ScenarioRunDet
 	result := []*app.ScenarioRunDetails{}
 	for _, detail := range scenario {
 		result = append(result, &app.ScenarioRunDetails{
+			Name:       detail.Name,
 			Duration:   detail.Duration,
 			Assertions: detail.Assertions,
 			Steps:      stepsRunDetailsToAppStepRunDetails(detail.Steps),

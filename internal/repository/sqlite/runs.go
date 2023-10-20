@@ -25,6 +25,7 @@ const (
 
 // ScenarioDetails is the json model for scenario run details.
 type ScenarioDetails struct {
+	Name       string        `json:"name"`
 	Duration   time.Duration `json:"duration"`
 	Assertions int           `json:"assertions"`
 	Steps      []*Step       `json:"steps"`
@@ -123,6 +124,7 @@ func domainScenarioToScenario(scenario *domain.ScenarioRunDetails) *ScenarioDeta
 		return &ScenarioDetails{}
 	}
 	return &ScenarioDetails{
+		Name:       scenario.Name,
 		Duration:   scenario.Duration,
 		Assertions: scenario.Assertions,
 		Steps:      domainStepsToSteps(scenario.Steps),
@@ -195,6 +197,7 @@ func scenarioRunDetailsToDomainScenarioRunDetails(scenario []byte) ([]*domain.Sc
 	result := []*domain.ScenarioRunDetails{}
 	for _, detail := range details {
 		result = append(result, &domain.ScenarioRunDetails{
+			Name:       detail.Name,
 			Duration:   detail.Duration,
 			Assertions: detail.Assertions,
 			Steps:      stepsRunDetailsToDomainStepRunDetails(detail.Steps),

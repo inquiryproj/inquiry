@@ -64,20 +64,31 @@ type Scenario struct {
 	SpecType  string    `json:"spec_type"`
 }
 
+// ScenarioCreateRequest defines model for ScenarioCreateRequest.
+type ScenarioCreateRequest struct {
+	Name     string `json:"name"`
+	Spec     string `json:"spec"`
+	SpecType string `json:"spec_type"`
+}
+
 // ScenarioRunDetails defines model for ScenarioRunDetails.
 type ScenarioRunDetails struct {
 	Assertions   int              `json:"assertions"`
 	DurationInMs int              `json:"duration_in_ms"`
+	Name         string           `json:"name"`
 	Steps        []StepRunDetails `json:"steps"`
 	Success      bool             `json:"success"`
 }
 
 // StepRunDetails defines model for StepRunDetails.
 type StepRunDetails struct {
-	Assertions   int    `json:"assertions"`
-	DurationInMs int    `json:"duration_in_ms"`
-	Name         string `json:"name"`
-	Success      bool   `json:"success"`
+	Assertions          int    `json:"assertions"`
+	DurationInMs        int    `json:"duration_in_ms"`
+	Name                string `json:"name"`
+	RequestDurationInMs int    `json:"request_duration_in_ms"`
+	Retries             int    `json:"retries"`
+	Success             bool   `json:"success"`
+	URL                 string `json:"url"`
 }
 
 // ListProjectsParams defines parameters for ListProjects.
@@ -102,7 +113,7 @@ type GetRunsForProjectParams struct {
 type CreateProjectJSONRequestBody = Project
 
 // CreateScenarioJSONRequestBody defines body for CreateScenario for application/json ContentType.
-type CreateScenarioJSONRequestBody = Scenario
+type CreateScenarioJSONRequestBody = ScenarioCreateRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
