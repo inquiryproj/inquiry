@@ -72,6 +72,7 @@ func (h *ProjectHandler) CreateProject(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, fmt.Sprintf("project with name %s already exists", httpProject.Name))
 	}
 	if err != nil {
+		h.logger.Error("unable to create project", slog.String("error", err.Error()))
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to create project")
 	}
 	return ctx.JSON(http.StatusCreated, httpInternal.Project{

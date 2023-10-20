@@ -54,7 +54,12 @@ func (s *Runner) RunProject(ctx context.Context, runProjectRequest *app.RunProje
 		s.logger.Error("failed to produce run for project", slog.String("error", err.Error()))
 		return nil, err
 	}
-	return &app.ProjectRunOutput{}, nil
+	return &app.ProjectRunOutput{
+		ID:        run.ID,
+		ProjectID: run.ProjectID,
+		State:     app.RunStatePending,
+		Success:   false,
+	}, nil
 }
 
 // GetRunsForProject returns runs for a given project, limit and offset.
