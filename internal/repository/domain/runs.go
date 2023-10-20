@@ -30,6 +30,7 @@ type Run struct {
 
 // ScenarioRunDetails is the domain model for scenario run details.
 type ScenarioRunDetails struct {
+	Name       string
 	Duration   time.Duration
 	Assertions int
 	Steps      []*StepRunDetails

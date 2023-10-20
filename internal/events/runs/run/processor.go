@@ -86,6 +86,7 @@ func executeResultsToScenarioRunDetails(executeResults []*http.ExecuteResult) []
 
 func executeResultToScenarioRunDetails(executeResult *http.ExecuteResult) *domain.ScenarioRunDetails {
 	return &domain.ScenarioRunDetails{
+		Name:       executeResult.Name,
 		Duration:   executeResult.TotalExecutionTime,
 		Assertions: executeResult.TotalAssertions,
 		Steps:      executeStepResultsToStepRunDetails(executeResult.StepResults),
@@ -109,6 +110,7 @@ func executeStepResultToStepRunDetails(executeStepResult *http.ExecuteStepResult
 		RequestDuration: executeStepResult.RequestDuration,
 		Duration:        executeStepResult.Duration,
 		Retries:         executeStepResult.Retries,
+		Success:         executeStepResult.Success,
 	}
 }
 

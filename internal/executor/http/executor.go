@@ -44,9 +44,7 @@ func NewExecutor(scenario *Scenario, opts ...Opts) (*Executor, error) {
 	for _, opt := range opts {
 		opt(o)
 	}
-	executor := &Executor{
-		scenarioMetrics: &scenarioMetrics{},
-	}
+	executor := &Executor{}
 	executor.scenario = scenario
 	executor.httpClient = o.HTTPClient
 	executor.logger = o.Logger

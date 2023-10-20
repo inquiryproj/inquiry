@@ -39,6 +39,19 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Project'
+    ScenarioCreateRequest:
+      type: object
+      required:
+        - name
+        - spec_type
+        - spec
+      properties:
+        name: 
+          type: string
+        spec_type: 
+          type: string
+        spec: 
+          type: string
     Scenario:
       type: object
       required:
@@ -99,11 +112,14 @@ components:
     ScenarioRunDetails:
       type: object
       required:
+        - name
         - duration_in_ms
         - assertions
         - success
         - steps
       properties:
+        name:
+          type: string
         duration_in_ms:
           type: integer
         assertions:
@@ -119,14 +135,24 @@ components:
       required:
         - name
         - assertions
+        - url
+        - request_duration_in_ms
         - duration_in_ms
+        - retries
         - success
       properties:
         name:
           type: string
         assertions:
           type: integer
+        url:
+          type: string
+          x-go-name: URL
+        request_duration_in_ms:
+          type: integer
         duration_in_ms:
+          type: integer
+        retries:
           type: integer
         success:
           type: boolean
@@ -221,7 +247,7 @@ paths:
         content: 
           application/json:
             schema: 
-              $ref: "#/components/schemas/Scenario"
+              $ref: "#/components/schemas/ScenarioCreateRequest"
       responses: 
         "201":
           content:

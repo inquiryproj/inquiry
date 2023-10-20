@@ -71,6 +71,7 @@ func appScenarioDetailsToHTTPScenarioDetails(scenario []*app.ScenarioRunDetails)
 	result := []httpInternal.ScenarioRunDetails{}
 	for _, detail := range scenario {
 		result = append(result, httpInternal.ScenarioRunDetails{
+			Name:         detail.Name,
 			DurationInMs: int(detail.Duration.Milliseconds()),
 			Assertions:   detail.Assertions,
 			Steps:        appStepsRunDetailsToHTTPStepRunDetails(detail.Steps),
@@ -84,10 +85,13 @@ func appStepsRunDetailsToHTTPStepRunDetails(steps []*app.StepRunDetails) []httpI
 	result := []httpInternal.StepRunDetails{}
 	for _, detail := range steps {
 		result = append(result, httpInternal.StepRunDetails{
-			Name:         detail.Name,
-			Assertions:   detail.Assertions,
-			DurationInMs: int(detail.Duration.Milliseconds()),
-			Success:      detail.Success,
+			Name:                detail.Name,
+			Assertions:          detail.Assertions,
+			URL:                 detail.URL,
+			RequestDurationInMs: int(detail.RequestDuration.Milliseconds()),
+			DurationInMs:        int(detail.Duration.Milliseconds()),
+			Retries:             detail.Retries,
+			Success:             detail.Success,
 		})
 	}
 	return result

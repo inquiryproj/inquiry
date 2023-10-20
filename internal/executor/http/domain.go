@@ -37,10 +37,9 @@ type Client interface {
 
 // Executor is the http test executor implementation.
 type Executor struct {
-	scenario        *Scenario
-	httpClient      Client
-	scenarioMetrics *scenarioMetrics
-	logger          *slog.Logger
+	scenario   *Scenario
+	httpClient Client
+	logger     *slog.Logger
 }
 
 // Scenario is the main struct for a test scenario to be executed.
