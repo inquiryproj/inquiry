@@ -29,10 +29,19 @@ func newRunHandler(runnerService service.Runner, options *Options) *RunHandler {
 
 // RunProject runs all scenarios for a given project.
 func (h *RunHandler) RunProject(ctx echo.Context, id uuid.UUID) error {
-	_, err := h.runnerService.RunProject(ctx.Request().Context(), &app.RunProjectRequest{
+	projectRunOutput, err := h.runnerService.RunProject(ctx.Request().Context(), &app.RunProjectRequest{
 		ProjectID: id,
 	})
-	return err
+	if err != nil {
+		h.logger.Error("failed to run project", slog.String("error", err.Error()))
+		return echo.NewHTTPError(http.StatusInternalServerError, "unable to run project")
+	}
+	return ctx.JSON(http.StatusOK, httpInternal.ProjectRunOutput{
+		ID:        projectRunOutput.ID,
+		ProjectID: projectRunOutput.ProjectID,
+		Success:   projectRunOutput.Success,
+		State:     httpInternal.ProjectRunOutputState(projectRunOutput.State),
+	})
 }
 
 // GetRunsForProject returns runs for a given project.
