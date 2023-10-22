@@ -69,6 +69,24 @@ jobs:
           else
             echo "Go mod is  up to date."
           fi
+  validate-mock-gen:
+    name: validate mock code has been generated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+      - name: Generate mock code
+        run: make mocks
+      - name: Check Git Diff
+        run: |
+          if [[ -n $(git diff --exit-code) ]]; then
+            echo "Git diff detected. Did you forget to run make mocks?"
+            exit 1
+          else
+            echo "Go mod is  up to date."
+          fi     
   lint-oapi:
     name: lint open api spec
     runs-on: ubuntu-latest
