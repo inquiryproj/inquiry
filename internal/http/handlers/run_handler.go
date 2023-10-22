@@ -63,7 +63,8 @@ func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params ht
 	}
 	runs, err := h.runnerService.GetRunsForProject(ctx.Request().Context(), getRunsForProjectRequest)
 	if err != nil {
-		return err
+		h.logger.Error("failed to get runs for project", slog.String("error", err.Error()))
+		return echo.NewHTTPError(http.StatusInternalServerError, "unable to get runs for project")
 	}
 
 	result := make([]httpInternal.ProjectRunOutput, len(runs.Runs))
