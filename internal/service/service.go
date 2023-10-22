@@ -22,7 +22,7 @@ type Wrapper interface {
 
 // Project is the project service.
 type Project interface {
-	GetProjects(ctx context.Context, getProjectsRequest *app.GetProjectsRequest) ([]*app.Project, error)
+	ListProjects(ctx context.Context, getProjectsRequest *app.ListProjectsRequest) ([]*app.Project, error)
 	CreateProject(ctx context.Context, createProjectRequest *app.CreateProjectRequest) (*app.Project, error)
 }
 

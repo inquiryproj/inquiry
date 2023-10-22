@@ -38,12 +38,12 @@ func (_m *Project) CreateProject(ctx context.Context, createProjectRequest *app.
 	return r0, r1
 }
 
-// GetProjects provides a mock function with given fields: ctx, getProjectsRequest
-func (_m *Project) GetProjects(ctx context.Context, getProjectsRequest *app.GetProjectsRequest) ([]*app.Project, error) {
+// ListProjects provides a mock function with given fields: ctx, getProjectsRequest
+func (_m *Project) ListProjects(ctx context.Context, getProjectsRequest *app.ListProjectsRequest) ([]*app.Project, error) {
 	ret := _m.Called(ctx, getProjectsRequest)
 
 	var r0 []*app.Project
-	if rf, ok := ret.Get(0).(func(context.Context, *app.GetProjectsRequest) []*app.Project); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *app.ListProjectsRequest) []*app.Project); ok {
 		r0 = rf(ctx, getProjectsRequest)
 	} else {
 		if ret.Get(0) != nil {
@@ -52,7 +52,7 @@ func (_m *Project) GetProjects(ctx context.Context, getProjectsRequest *app.GetP
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *app.GetProjectsRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *app.ListProjectsRequest) error); ok {
 		r1 = rf(ctx, getProjectsRequest)
 	} else {
 		r1 = ret.Error(1)

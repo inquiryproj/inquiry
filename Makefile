@@ -31,6 +31,9 @@ gci: | $(GOBIN)/gci
 
 format: gci gofumpt
 
+coverage-report:
+	@open ./reports/coverage.html
+	
 # Run unit tests and generate coverage report
 test:
 	@mkdir -p reports

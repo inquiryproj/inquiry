@@ -8,8 +8,8 @@ type Project struct {
 	Name string
 }
 
-// GetProjectsRequest requests model for retrieving projects.
-type GetProjectsRequest struct {
+// ListProjectsRequest requests model for retrieving projects.
+type ListProjectsRequest struct {
 	Limit  int
 	Offset int
 }

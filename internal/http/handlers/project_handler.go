@@ -34,18 +34,18 @@ func newProjectHandler(projectService service.Project, opts ...Opts) *ProjectHan
 
 // ListProjects lists all projects.
 func (h *ProjectHandler) ListProjects(ctx echo.Context, params httpInternal.ListProjectsParams) error {
-	getProjectsRequest := &app.GetProjectsRequest{
+	listProjectsRequest := &app.ListProjectsRequest{
 		Limit:  100,
 		Offset: 0,
 	}
 	if params.Limit != nil {
-		getProjectsRequest.Limit = *params.Limit
+		listProjectsRequest.Limit = *params.Limit
 	}
 	if params.Offset != nil {
-		getProjectsRequest.Offset = *params.Offset
+		listProjectsRequest.Offset = *params.Offset
 	}
 
-	projects, err := h.projectService.GetProjects(ctx.Request().Context(), getProjectsRequest)
+	projects, err := h.projectService.ListProjects(ctx.Request().Context(), listProjectsRequest)
 	if err != nil {
 		h.logger.Error("unable to get projects", slog.String("error", err.Error()))
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to get projects")
@@ -68,6 +68,9 @@ func (h *ProjectHandler) CreateProject(ctx echo.Context) error {
 	err := json.NewDecoder(ctx.Request().Body).Decode(&httpProject)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid create project payload")
+	}
+	if httpProject.Name == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "please specify a name when creating a project")
 	}
 	project, err := h.projectService.CreateProject(ctx.Request().Context(), &app.CreateProjectRequest{
 		Name: httpProject.Name,
