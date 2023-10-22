@@ -21,7 +21,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.54.2
+          version: v1.55.0
   test:
     name: unit test Go
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
             echo "Git diff detected. Did you forget to run go mod tidy?"
             exit 1
           else
-            echo "Go mod is  up to date."
+            echo "Go mod is up to date."
           fi
   validate-oapi-gen:
     name: validate server code was generated from open api spec
@@ -67,7 +67,7 @@ jobs:
             echo "Git diff detected. Did you forget to run make oapi-gen?"
             exit 1
           else
-            echo "Go mod is  up to date."
+            echo "Oapi gen is up to date."
           fi
   validate-mock-gen:
     name: validate mock code has been generated
@@ -85,7 +85,7 @@ jobs:
             echo "Git diff detected. Did you forget to run make mocks?"
             exit 1
           else
-            echo "Go mod is  up to date."
+            echo "Mocks are up to date."
           fi     
   lint-oapi:
     name: lint open api spec
