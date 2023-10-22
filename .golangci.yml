@@ -45,18 +45,18 @@ linters-settings:
           - [] # DenyList
       - name: argument-limit
         severity: warning
-        disabled: true
+        disabled: false
       - name: banned-characters
-        disabled: true
+        disabled: false
       - name: max-public-structs
         disabled: true
       - name: file-header
-        disabled: true
+        disabled: false
       - name: cognitive-complexity
         disabled: false
         arguments: [15]
       - name: unused-receiver
-        disabled: true
+        disabled: false
       - name: function-length
         disabled: false
         arguments: [30, 0]
@@ -69,7 +69,11 @@ linters-settings:
         severity: warning
         disabled: false
         arguments: [3]
-
+      - name: import-alias-naming
+        severity: warning
+        disabled: false
+        arguments:
+          - "^[a-z][a-z0-9A-Z]{0,}$"
   govet:
     check-shadowing: false
 

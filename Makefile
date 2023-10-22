@@ -1,4 +1,4 @@
-golangciLintVersion = "v1.54.2"
+golangciLintVersion = "v1.55.0"
 gofumptVersion = "v0.5.0"
 gciVersion = "v0.11.0"
 oapiCodegenVersion = "v1.15.0"
