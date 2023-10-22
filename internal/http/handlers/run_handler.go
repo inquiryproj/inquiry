@@ -20,7 +20,11 @@ type RunHandler struct {
 }
 
 // newRunHandler creates a new run handler.
-func newRunHandler(runnerService service.Runner, options *Options) *RunHandler {
+func newRunHandler(runnerService service.Runner, opts ...Opts) *RunHandler {
+	options := defaultOptions()
+	for _, o := range opts {
+		o(options)
+	}
 	return &RunHandler{
 		runnerService: runnerService,
 		logger:        options.Logger,

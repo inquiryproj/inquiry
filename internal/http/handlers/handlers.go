@@ -49,13 +49,9 @@ func NewHandlerWrapper(
 	serviceWrapper service.Wrapper,
 	opts ...Opts,
 ) *HandlerWrapper {
-	options := defaultOptions()
-	for _, o := range opts {
-		o(options)
-	}
 	return &HandlerWrapper{
-		ProjectHandler:  newProjectHandler(serviceWrapper, options),
-		ScenarioHandler: newScenarioHandler(serviceWrapper, options),
-		RunHandler:      newRunHandler(serviceWrapper, options),
+		ProjectHandler:  newProjectHandler(serviceWrapper, opts...),
+		ScenarioHandler: newScenarioHandler(serviceWrapper, opts...),
+		RunHandler:      newRunHandler(serviceWrapper, opts...),
 	}
 }

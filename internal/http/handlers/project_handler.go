@@ -21,7 +21,11 @@ type ProjectHandler struct {
 }
 
 // newProjectHandler creates a new project handler.
-func newProjectHandler(projectService service.Project, options *Options) *ProjectHandler {
+func newProjectHandler(projectService service.Project, opts ...Opts) *ProjectHandler {
+	options := defaultOptions()
+	for _, o := range opts {
+		o(options)
+	}
 	return &ProjectHandler{
 		projectService: projectService,
 		logger:         options.Logger,

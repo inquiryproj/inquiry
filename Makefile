@@ -2,6 +2,7 @@ golangciLintVersion = "v1.54.2"
 gofumptVersion = "v0.5.0"
 gciVersion = "v0.11.0"
 oapiCodegenVersion = "v1.15.0"
+mockeryVersion = "v2.19.0"
 
 $(GOBIN)/golangci-lint:
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@${golangciLintVersion}
@@ -55,3 +56,10 @@ oapi-gen: | $(GOBIN)/oapi-codegen
 # Lint OpenAPI Spec
 lint-oapi: | /usr/local/bin/spectral
 	@spectral lint --fail-severity=warn --ruleset rule.spectral.yaml --verbose ./api/api-spec.yml 
+
+# Mock generation
+$(GOBIN)/mockery:
+	@go install github.com/vektra/mockery/v2@${mockeryVersion}
+
+mocks:
+	@go generate --tags=mocks ./...

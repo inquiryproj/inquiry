@@ -22,7 +22,11 @@ type ScenarioHandler struct {
 }
 
 // newScenarioHandler creates a new scenario handler.
-func newScenarioHandler(scenarioService service.Scenario, options *Options) *ScenarioHandler {
+func newScenarioHandler(scenarioService service.Scenario, opts ...Opts) *ScenarioHandler {
+	options := defaultOptions()
+	for _, o := range opts {
+		o(options)
+	}
 	return &ScenarioHandler{
 		scenarioService: scenarioService,
 		logger:          options.Logger,
