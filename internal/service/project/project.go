@@ -31,8 +31,8 @@ func NewService(projectRepository repository.Project, opts ...serviceOptions.Opt
 	}
 }
 
-// GetProjects returns all projects.
-func (s *Project) GetProjects(ctx context.Context, getProjectsRequest *app.GetProjectsRequest) ([]*app.Project, error) {
+// ListProjects returns a list of projects.
+func (s *Project) ListProjects(ctx context.Context, getProjectsRequest *app.ListProjectsRequest) ([]*app.Project, error) {
 	projects, err := s.projectRepository.GetProjects(ctx, &domain.GetProjectsRequest{
 		Limit:  getProjectsRequest.Limit,
 		Offset: getProjectsRequest.Offset,
