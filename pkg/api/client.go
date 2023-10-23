@@ -581,7 +581,7 @@ func NewRunProjectByNameRequest(server string, name string) (*http.Request, erro
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/projects/%s/run", pathParam0)
+	operationPath := fmt.Sprintf("/v1/projects/%s/run-by-name", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}

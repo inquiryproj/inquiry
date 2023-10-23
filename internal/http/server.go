@@ -30,7 +30,7 @@ type ServerInterface interface {
 	// (POST /v1/projects/{id}/scenarios)
 	CreateScenario(ctx echo.Context, id uuid.UUID) error
 
-	// (POST /v1/projects/{name}/run)
+	// (POST /v1/projects/{name}/run-by-name)
 	RunProjectByName(ctx echo.Context, name string) error
 }
 
@@ -186,6 +186,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/v1/projects/:id/run", wrapper.RunProject)
 	router.GET(baseURL+"/v1/projects/:id/runs", wrapper.GetRunsForProject)
 	router.POST(baseURL+"/v1/projects/:id/scenarios", wrapper.CreateScenario)
-	router.POST(baseURL+"/v1/projects/:name/run", wrapper.RunProjectByName)
+	router.POST(baseURL+"/v1/projects/:name/run-by-name", wrapper.RunProjectByName)
 
 }
