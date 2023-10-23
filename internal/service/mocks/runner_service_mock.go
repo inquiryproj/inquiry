@@ -67,6 +67,32 @@ func (_m *Runner) RunProject(ctx context.Context, run *app.RunProjectRequest) (*
 	return r0, r1
 }
 
+// RunProjectByName provides a mock function with given fields: ctx, run
+func (_m *Runner) RunProjectByName(ctx context.Context, run *app.RunProjectByNameRequest) (*app.ProjectRunOutput, error) {
+	ret := _m.Called(ctx, run)
+
+	var r0 *app.ProjectRunOutput
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *app.RunProjectByNameRequest) (*app.ProjectRunOutput, error)); ok {
+		return rf(ctx, run)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *app.RunProjectByNameRequest) *app.ProjectRunOutput); ok {
+		r0 = rf(ctx, run)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*app.ProjectRunOutput)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *app.RunProjectByNameRequest) error); ok {
+		r1 = rf(ctx, run)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewRunner creates a new instance of Runner. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewRunner(t interface {

@@ -22,6 +22,21 @@ type ProjectRepository struct {
 	conn *gorm.DB
 }
 
+// GetByName returns a project from sqlite by name.
+func (r *ProjectRepository) GetByName(ctx context.Context, name string) (*domain.Project, error) {
+	project := &Project{}
+	err := r.conn.WithContext(ctx).Where("name = ?", name).First(project).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("%w %w", domain.ErrProjectNotFound, err)
+	} else if err != nil {
+		return nil, err
+	}
+	return &domain.Project{
+		ID:   project.ID,
+		Name: project.Name,
+	}, nil
+}
+
 // GetProjects returns all projects from sqlite.
 func (r *ProjectRepository) GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error) {
 	projects := []*Project{}

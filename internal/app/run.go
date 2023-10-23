@@ -12,6 +12,11 @@ type RunProjectRequest struct {
 	ProjectID uuid.UUID
 }
 
+// RunProjectByNameRequest requests model for running a project for a given name.
+type RunProjectByNameRequest struct {
+	ProjectName string
+}
+
 // RunState is the state of a run.
 type RunState string
 

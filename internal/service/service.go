@@ -34,6 +34,7 @@ type Scenario interface {
 // Runner is the runner service.
 type Runner interface {
 	RunProject(ctx context.Context, run *app.RunProjectRequest) (*app.ProjectRunOutput, error)
+	RunProjectByName(ctx context.Context, run *app.RunProjectByNameRequest) (*app.ProjectRunOutput, error)
 	GetRunsForProject(ctx context.Context, getRunsForProjectRequest *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error)
 }
 
@@ -50,6 +51,6 @@ func NewServiceWrapper(
 	}{
 		project.NewService(repositoryWrapper.Project, opts...),
 		scenario.NewService(repositoryWrapper.Scenario, opts...),
-		runner.NewService(repositoryWrapper.Scenario, repositoryWrapper.Run, runsProducer, opts...),
+		runner.NewService(repositoryWrapper.Project, repositoryWrapper.Scenario, repositoryWrapper.Run, runsProducer, opts...),
 	}
 }

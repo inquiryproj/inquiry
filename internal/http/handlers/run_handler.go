@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -40,12 +41,30 @@ func (h *RunHandler) RunProject(ctx echo.Context, id uuid.UUID) error {
 		h.logger.Error("failed to run project", slog.String("error", err.Error()))
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to run project")
 	}
-	return ctx.JSON(http.StatusOK, httpInternal.ProjectRunOutput{
+	return ctx.JSON(http.StatusOK, projectRunOutputToHTTP(projectRunOutput))
+}
+
+// RunProjectByName runs all scenarios for a given project with a given name.
+func (h *RunHandler) RunProjectByName(ctx echo.Context, name string) error {
+	projectRunOutput, err := h.runnerService.RunProjectByName(ctx.Request().Context(), &app.RunProjectByNameRequest{
+		ProjectName: name,
+	})
+	if errors.Is(err, app.ErrProjectNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, "project not found")
+	} else if err != nil {
+		h.logger.Error("failed to run project", slog.String("error", err.Error()))
+		return echo.NewHTTPError(http.StatusInternalServerError, "unable to run project")
+	}
+	return ctx.JSON(http.StatusOK, projectRunOutputToHTTP(projectRunOutput))
+}
+
+func projectRunOutputToHTTP(projectRunOutput *app.ProjectRunOutput) httpInternal.ProjectRunOutput {
+	return httpInternal.ProjectRunOutput{
 		ID:        projectRunOutput.ID,
 		ProjectID: projectRunOutput.ProjectID,
 		Success:   projectRunOutput.Success,
 		State:     httpInternal.ProjectRunOutputState(projectRunOutput.State),
-	})
+	}
 }
 
 // GetRunsForProject returns runs for a given project.

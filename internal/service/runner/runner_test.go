@@ -16,6 +16,7 @@ import (
 
 type mockWrapper struct {
 	scenarioRepositoryMock *repositoryMocks.Scenario
+	projectRepositoryMock  *repositoryMocks.Project
 	runRepositoryMock      *repositoryMocks.Run
 	runProducerMock        *eventMocks.Producer
 }
@@ -23,6 +24,7 @@ type mockWrapper struct {
 func newMockWrapper(t *testing.T) *mockWrapper {
 	return &mockWrapper{
 		scenarioRepositoryMock: repositoryMocks.NewScenario(t),
+		projectRepositoryMock:  repositoryMocks.NewProject(t),
 		runRepositoryMock:      repositoryMocks.NewRun(t),
 		runProducerMock:        eventMocks.NewProducer(t),
 	}
@@ -40,8 +42,8 @@ func TestGetRunsForProject(t *testing.T) {
 		{
 			name: "success",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("GetForProject", mock.Anything,
-					&domain.GetRunsForProjectRequest{
+				wrapper.runRepositoryMock.On("ListForProject", mock.Anything,
+					&domain.ListRunsForProjectRequest{
 						ProjectID: projectID,
 						Limit:     10,
 						Offset:    0,
@@ -80,8 +82,8 @@ func TestGetRunsForProject(t *testing.T) {
 		{
 			name: "no results",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("GetForProject", mock.Anything,
-					&domain.GetRunsForProjectRequest{
+				wrapper.runRepositoryMock.On("ListForProject", mock.Anything,
+					&domain.ListRunsForProjectRequest{
 						ProjectID: projectID,
 						Limit:     10,
 						Offset:    0,
@@ -97,8 +99,8 @@ func TestGetRunsForProject(t *testing.T) {
 		{
 			name: "no scenario details",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("GetForProject", mock.Anything,
-					&domain.GetRunsForProjectRequest{
+				wrapper.runRepositoryMock.On("ListForProject", mock.Anything,
+					&domain.ListRunsForProjectRequest{
 						ProjectID: projectID,
 						Limit:     10,
 						Offset:    0,
@@ -121,8 +123,8 @@ func TestGetRunsForProject(t *testing.T) {
 		{
 			name: "unable to get runs",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("GetForProject", mock.Anything,
-					&domain.GetRunsForProjectRequest{
+				wrapper.runRepositoryMock.On("ListForProject", mock.Anything,
+					&domain.ListRunsForProjectRequest{
 						ProjectID: projectID,
 						Limit:     10,
 						Offset:    0,
@@ -238,6 +240,7 @@ func TestRunProject(t *testing.T) {
 
 func newRunnerService(mockWrapper *mockWrapper) *Runner {
 	return NewService(
+		mockWrapper.projectRepositoryMock,
 		mockWrapper.scenarioRepositoryMock,
 		mockWrapper.runRepositoryMock,
 		mockWrapper.runProducerMock,

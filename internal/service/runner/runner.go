@@ -3,7 +3,10 @@ package runner
 
 import (
 	"context"
+	"errors"
 	"log/slog"
+
+	"github.com/google/uuid"
 
 	"github.com/inquiryproj/inquiry/internal/app"
 	"github.com/inquiryproj/inquiry/internal/events/runs"
@@ -14,6 +17,7 @@ import (
 
 // Runner is the runner service.
 type Runner struct {
+	projectRepository  repository.Project
 	scenarioRepository repository.Scenario
 	runRepository      repository.Run
 	runsProducer       runs.Producer
@@ -23,6 +27,7 @@ type Runner struct {
 
 // NewService initialises the runner service.
 func NewService(
+	projectRepository repository.Project,
 	scenarioRepository repository.Scenario,
 	runRepository repository.Run,
 	runsProducer runs.Producer,
@@ -33,6 +38,7 @@ func NewService(
 		opt(options)
 	}
 	return &Runner{
+		projectRepository:  projectRepository,
 		scenarioRepository: scenarioRepository,
 		runRepository:      runRepository,
 		logger:             options.Logger,
@@ -42,8 +48,25 @@ func NewService(
 
 // RunProject runs all scenarios for a given project.
 func (s *Runner) RunProject(ctx context.Context, runProjectRequest *app.RunProjectRequest) (*app.ProjectRunOutput, error) {
+	return s.runProjectForID(ctx, runProjectRequest.ProjectID)
+}
+
+// RunProjectByName runs all scenarios for a given project with a given name.
+func (s *Runner) RunProjectByName(ctx context.Context, run *app.RunProjectByNameRequest) (*app.ProjectRunOutput, error) {
+	project, err := s.projectRepository.GetByName(ctx, run.ProjectName)
+	if errors.Is(err, domain.ErrProjectNotFound) {
+		return nil, app.ErrProjectNotFound
+	} else if err != nil {
+		s.logger.Error("failed to get project by name", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	return s.runProjectForID(ctx, project.ID)
+}
+
+func (s *Runner) runProjectForID(ctx context.Context, projectID uuid.UUID) (*app.ProjectRunOutput, error) {
 	run, err := s.runRepository.CreateRun(ctx, &domain.CreateRunRequest{
-		ProjectID: runProjectRequest.ProjectID,
+		ProjectID: projectID,
 	})
 	if err != nil {
 		s.logger.Error("failed to create run", slog.String("error", err.Error()))
@@ -64,7 +87,7 @@ func (s *Runner) RunProject(ctx context.Context, runProjectRequest *app.RunProje
 
 // GetRunsForProject returns runs for a given project, limit and offset.
 func (s *Runner) GetRunsForProject(ctx context.Context, getRunsForProjectRequest *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error) {
-	res, err := s.runRepository.GetForProject(ctx, &domain.GetRunsForProjectRequest{
+	res, err := s.runRepository.ListForProject(ctx, &domain.ListRunsForProjectRequest{
 		ProjectID: getRunsForProjectRequest.ProjectID,
 		Limit:     getRunsForProjectRequest.Limit,
 		Offset:    getRunsForProjectRequest.Offset,

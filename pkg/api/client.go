@@ -206,6 +206,9 @@ type ClientInterface interface {
 	CreateScenarioWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateScenario(ctx context.Context, id uuid.UUID, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RunProjectByName request
+	RunProjectByName(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) ListProjects(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -282,6 +285,18 @@ func (c *Client) CreateScenarioWithBody(ctx context.Context, id uuid.UUID, conte
 
 func (c *Client) CreateScenario(ctx context.Context, id uuid.UUID, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateScenarioRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RunProjectByName(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRunProjectByNameRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -550,6 +565,40 @@ func NewCreateScenarioRequestWithBody(server string, id uuid.UUID, contentType s
 	return req, nil
 }
 
+// NewRunProjectByNameRequest generates requests for RunProjectByName
+func NewRunProjectByNameRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/projects/%s/run", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -611,6 +660,9 @@ type ClientWithResponsesInterface interface {
 	CreateScenarioWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
 
 	CreateScenarioWithResponse(ctx context.Context, id uuid.UUID, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
+
+	// RunProjectByNameWithResponse request
+	RunProjectByNameWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*RunProjectByNameResponse, error)
 }
 
 type ListProjectsResponse struct {
@@ -728,6 +780,29 @@ func (r CreateScenarioResponse) StatusCode() int {
 	return 0
 }
 
+type RunProjectByNameResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectRunOutput
+	JSONDefault  *ErrMsg
+}
+
+// Status returns HTTPResponse.Status
+func (r RunProjectByNameResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RunProjectByNameResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // ListProjectsWithResponse request returning *ListProjectsResponse
 func (c *ClientWithResponses) ListProjectsWithResponse(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*ListProjectsResponse, error) {
 	rsp, err := c.ListProjects(ctx, params, reqEditors...)
@@ -787,6 +862,15 @@ func (c *ClientWithResponses) CreateScenarioWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseCreateScenarioResponse(rsp)
+}
+
+// RunProjectByNameWithResponse request returning *RunProjectByNameResponse
+func (c *ClientWithResponses) RunProjectByNameWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*RunProjectByNameResponse, error) {
+	rsp, err := c.RunProjectByName(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRunProjectByNameResponse(rsp)
 }
 
 // ParseListProjectsResponse parses an HTTP response from a ListProjectsWithResponse call
@@ -941,6 +1025,39 @@ func ParseCreateScenarioResponse(rsp *http.Response) (*CreateScenarioResponse, e
 			return nil, err
 		}
 		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest ErrMsg
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRunProjectByNameResponse parses an HTTP response from a RunProjectByNameWithResponse call
+func ParseRunProjectByNameResponse(rsp *http.Response) (*RunProjectByNameResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RunProjectByNameResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectRunOutput
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest ErrMsg

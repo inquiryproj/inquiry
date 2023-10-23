@@ -291,6 +291,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrMsg"
+  "/v1/projects/{name}/run":
+    post:
+      description: Runs all scenarios for a given project with a given name
+      operationId: runProjectByName
+      tags:
+        - projects
+        - run
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+      responses: 
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectRunOutput"
+          description: The scenarios for the project ran successfully.
+        default:
+          description: Something went wrong while running the scenarios
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
   "/v1/projects/{id}/runs":
     get:
       description: Retrieves all runs for a given project

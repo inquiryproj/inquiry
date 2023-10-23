@@ -42,32 +42,6 @@ func (_m *Run) CreateRun(ctx context.Context, createRunRequest *domain.CreateRun
 	return r0, r1
 }
 
-// GetForProject provides a mock function with given fields: ctx, getForProjectRequest
-func (_m *Run) GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error) {
-	ret := _m.Called(ctx, getForProjectRequest)
-
-	var r0 []*domain.Run
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.GetRunsForProjectRequest) ([]*domain.Run, error)); ok {
-		return rf(ctx, getForProjectRequest)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.GetRunsForProjectRequest) []*domain.Run); ok {
-		r0 = rf(ctx, getForProjectRequest)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.Run)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.GetRunsForProjectRequest) error); ok {
-		r1 = rf(ctx, getForProjectRequest)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetRun provides a mock function with given fields: ctx, id
 func (_m *Run) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
 	ret := _m.Called(ctx, id)
@@ -87,6 +61,32 @@ func (_m *Run) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
 
 	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
 		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListForProject provides a mock function with given fields: ctx, listForProject
+func (_m *Run) ListForProject(ctx context.Context, listForProject *domain.ListRunsForProjectRequest) ([]*domain.Run, error) {
+	ret := _m.Called(ctx, listForProject)
+
+	var r0 []*domain.Run
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.ListRunsForProjectRequest) ([]*domain.Run, error)); ok {
+		return rf(ctx, listForProject)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.ListRunsForProjectRequest) []*domain.Run); ok {
+		r0 = rf(ctx, listForProject)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.Run)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.ListRunsForProjectRequest) error); ok {
+		r1 = rf(ctx, listForProject)
 	} else {
 		r1 = ret.Error(1)
 	}

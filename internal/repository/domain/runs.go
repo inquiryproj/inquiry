@@ -62,8 +62,8 @@ type UpdateRunRequest struct {
 	ScenarioRunDetails []*ScenarioRunDetails
 }
 
-// GetRunsForProjectRequest is the request to get runs for a project.
-type GetRunsForProjectRequest struct {
+// ListRunsForProjectRequest is the request to get runs for a project.
+type ListRunsForProjectRequest struct {
 	ProjectID uuid.UUID
 	Limit     int
 	Offset    int

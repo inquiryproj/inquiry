@@ -164,6 +164,8 @@ linters-settings:
           - "**service/*.go"
           - "**service/**/*.go"
         deny:
+          - pkg: "gorm.io/gorm"
+            desc: service has no repository layer knowledge
           - pkg: "github.com/labstack/echo/v4"
             desc: service has no transport layer knowledge
           - pkg: "net/http"

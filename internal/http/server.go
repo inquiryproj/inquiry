@@ -29,6 +29,9 @@ type ServerInterface interface {
 
 	// (POST /v1/projects/{id}/scenarios)
 	CreateScenario(ctx echo.Context, id uuid.UUID) error
+
+	// (POST /v1/projects/{name}/run)
+	RunProjectByName(ctx echo.Context, name string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -134,6 +137,22 @@ func (w *ServerInterfaceWrapper) CreateScenario(ctx echo.Context) error {
 	return err
 }
 
+// RunProjectByName converts echo context to params.
+func (w *ServerInterfaceWrapper) RunProjectByName(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "name" -------------
+	var name string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "name", runtime.ParamLocationPath, ctx.Param("name"), &name)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter name: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.RunProjectByName(ctx, name)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -167,5 +186,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/v1/projects/:id/run", wrapper.RunProject)
 	router.GET(baseURL+"/v1/projects/:id/runs", wrapper.GetRunsForProject)
 	router.POST(baseURL+"/v1/projects/:id/scenarios", wrapper.CreateScenario)
+	router.POST(baseURL+"/v1/projects/:name/run", wrapper.RunProjectByName)
 
 }

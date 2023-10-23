@@ -148,8 +148,8 @@ func domainStepsToSteps(steps []*domain.StepRunDetails) []*Step {
 	return result
 }
 
-// GetForProject returns all runs for a given project.
-func (r *RunRepository) GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error) {
+// ListForProject returns all runs for a given project list runs request.
+func (r *RunRepository) ListForProject(ctx context.Context, getForProjectRequest *domain.ListRunsForProjectRequest) ([]*domain.Run, error) {
 	runs := []*Run{}
 	err := r.conn.
 		WithContext(ctx).

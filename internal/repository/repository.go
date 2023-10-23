@@ -19,6 +19,7 @@ type Wrapper struct {
 
 // Project is the project repository.
 type Project interface {
+	GetByName(ctx context.Context, name string) (*domain.Project, error)
 	GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error)
 	CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error)
 }
@@ -28,7 +29,7 @@ type Run interface {
 	GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error)
 	CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error)
 	UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error)
-	GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error)
+	ListForProject(ctx context.Context, listForProject *domain.ListRunsForProjectRequest) ([]*domain.Run, error)
 }
 
 // Scenario is the scenario repository.
