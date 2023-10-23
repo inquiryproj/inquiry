@@ -57,7 +57,7 @@ func (s *Runner) RunProject(ctx context.Context, runProjectRequest *app.RunProje
 	return &app.ProjectRunOutput{
 		ID:        run.ID,
 		ProjectID: run.ProjectID,
-		State:     app.RunStatePending,
+		State:     app.RunState(run.State),
 		Success:   false,
 	}, nil
 }

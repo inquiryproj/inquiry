@@ -13,8 +13,8 @@ import (
 // Wrapper wraps all repositories.
 type Wrapper struct {
 	Project  Project
-	Scenario Scenario
 	Run      Run
+	Scenario Scenario
 }
 
 // Project is the project repository.
@@ -23,18 +23,18 @@ type Project interface {
 	CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error)
 }
 
-// Scenario is the scenario repository.
-type Scenario interface {
-	CreateScenario(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error)
-	GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error)
-}
-
 // Run is the run repository.
 type Run interface {
 	GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error)
 	CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error)
 	UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error)
 	GetForProject(ctx context.Context, getForProjectRequest *domain.GetRunsForProjectRequest) ([]*domain.Run, error)
+}
+
+// Scenario is the scenario repository.
+type Scenario interface {
+	CreateScenario(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error)
+	GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error)
 }
 
 // Type is the type of repository.
