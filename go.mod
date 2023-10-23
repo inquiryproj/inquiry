@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/oapi-codegen/runtime v1.0.0
-	github.com/samber/slog-echo v1.5.0
+	github.com/samber/slog-echo v1.6.0
 	github.com/slack-go/slack v0.12.3
 	github.com/stretchr/testify v1.8.4
 	github.com/tidwall/gjson v1.17.0
