@@ -291,7 +291,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrMsg"
-  "/v1/projects/{name}/run":
+  "/v1/projects/{name}/run-by-name":
     post:
       description: Runs all scenarios for a given project with a given name
       operationId: runProjectByName

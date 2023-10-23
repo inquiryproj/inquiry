@@ -66,3 +66,4 @@ $(GOBIN)/mockery:
 
 mocks: | $(GOBIN)/mockery
 	@go generate --tags=mocks ./...
+	@${MAKE} format

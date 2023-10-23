@@ -238,6 +238,118 @@ func TestRunProject(t *testing.T) {
 	}
 }
 
+func TestRunProjectByName(t *testing.T) {
+	projectID := uuid.New()
+	runID := uuid.New()
+	tests := []struct {
+		name              string
+		runProjectRequest *app.RunProjectByNameRequest
+		setupMocks        func(*mockWrapper)
+		validateOutput    func(*testing.T, *app.ProjectRunOutput, error)
+	}{
+		{
+			name: "success",
+			setupMocks: func(wrapper *mockWrapper) {
+				wrapper.projectRepositoryMock.On("GetByName", mock.Anything, "default").
+					Return(&domain.Project{
+						ID:   projectID,
+						Name: "default",
+					}, nil)
+
+				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+					&domain.CreateRunRequest{
+						ProjectID: projectID,
+					}).
+					Return(&domain.Run{
+						ID:        runID,
+						ProjectID: projectID,
+						State:     domain.RunStatePending,
+						Success:   false,
+					}, nil)
+				wrapper.runProducerMock.On("Produce", runID).Return(nil)
+			},
+			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
+				assert.NoError(t, err)
+
+				assert.Equal(t, runID, res.ID)
+				assert.Equal(t, projectID, res.ProjectID)
+				assert.Equal(t, app.RunStatePending, res.State)
+				assert.Equal(t, false, res.Success)
+			},
+		},
+		{
+			name: "unable to produce",
+			setupMocks: func(wrapper *mockWrapper) {
+				wrapper.projectRepositoryMock.On("GetByName", mock.Anything, "default").
+					Return(&domain.Project{
+						ID:   projectID,
+						Name: "default",
+					}, nil)
+
+				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+					&domain.CreateRunRequest{
+						ProjectID: projectID,
+					}).
+					Return(&domain.Run{
+						ID:        runID,
+						ProjectID: projectID,
+						State:     domain.RunStatePending,
+						Success:   false,
+					}, nil)
+				wrapper.runProducerMock.On("Produce", runID).Return(assert.AnError)
+			},
+			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name: "unable to create run",
+			setupMocks: func(wrapper *mockWrapper) {
+				wrapper.projectRepositoryMock.On("GetByName", mock.Anything, "default").
+					Return(&domain.Project{
+						ID:   projectID,
+						Name: "default",
+					}, nil)
+
+				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+					&domain.CreateRunRequest{
+						ProjectID: projectID,
+					}).
+					Return(nil, assert.AnError)
+			},
+			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			name: "project not found",
+			setupMocks: func(wrapper *mockWrapper) {
+				wrapper.projectRepositoryMock.On("GetByName", mock.Anything, "default").
+					Return(nil, domain.ErrProjectNotFound)
+			},
+			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, app.ErrProjectNotFound)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defaultInput := &app.RunProjectByNameRequest{
+				ProjectName: "default",
+			}
+			if tt.runProjectRequest != nil {
+				defaultInput = tt.runProjectRequest
+			}
+			wrapper := newMockWrapper(t)
+			tt.setupMocks(wrapper)
+			s := newRunnerService(wrapper)
+			res, err := s.RunProjectByName(context.Background(), defaultInput)
+			tt.validateOutput(t, res, err)
+		})
+	}
+}
+
 func newRunnerService(mockWrapper *mockWrapper) *Runner {
 	return NewService(
 		mockWrapper.projectRepositoryMock,
