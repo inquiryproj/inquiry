@@ -7,7 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/inquiryproj/inquiry/internal/infra/replacer"
+	"github.com/inquiryproj/inquiry/internal/executor/replacer"
 )
 
 const variablesPrefix = "variables"

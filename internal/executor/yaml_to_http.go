@@ -2,7 +2,7 @@ package executor
 
 import (
 	"github.com/inquiryproj/inquiry/internal/executor/http"
-	"github.com/inquiryproj/inquiry/internal/infra/test/definitions/yaml"
+	"github.com/inquiryproj/inquiry/internal/executor/yaml"
 )
 
 func yamlScenarioToHTTPScenario(name string, yamlScenario *yaml.Scenario) *http.Scenario {

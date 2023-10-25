@@ -1,7 +1,7 @@
 package executor
 
 import (
-	"github.com/inquiryproj/inquiry/internal/infra/test/definitions/yaml"
+	"github.com/inquiryproj/inquiry/internal/executor/yaml"
 )
 
 type testType string

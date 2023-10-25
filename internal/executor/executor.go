@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/inquiryproj/inquiry/internal/executor/http"
-	"github.com/inquiryproj/inquiry/internal/infra/replacer"
-	"github.com/inquiryproj/inquiry/internal/infra/test/definitions/yaml"
+	"github.com/inquiryproj/inquiry/internal/executor/replacer"
+	"github.com/inquiryproj/inquiry/internal/executor/yaml"
 )
 
 // error definitions.
