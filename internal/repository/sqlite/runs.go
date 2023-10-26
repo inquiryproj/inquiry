@@ -61,7 +61,7 @@ type RunRepository struct {
 // GetRun returns a run from sqlite.
 func (r *RunRepository) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
 	run := Run{}
-	err := r.conn.Model(&Run{}).WithContext(ctx).Where("id = ?", id).First(&run).Error
+	err := r.conn.WithContext(ctx).Model(&Run{}).Where("id = ?", id).First(&run).Error
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.
 		State:           RunStatePending,
 		ScenarioDetails: []byte(`{}`),
 	}
-	err := r.conn.WithContext(ctx).Create(run).Error
+	err := r.conn.WithContext(ctx).Model(&Run{}).Create(run).Error
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.
 // UpdateRun updates a run in sqlite.
 func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error) {
 	run := Run{}
-	err := r.conn.Model(&Run{}).Where("id = ?", updateRunRequest.ID).First(&run).Error
+	err := r.conn.WithContext(ctx).Model(&Run{}).Where("id = ?", updateRunRequest.ID).First(&run).Error
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.
 	}
 	run.ScenarioDetails = b
 
-	err = r.conn.WithContext(ctx).Save(&run).Error
+	err = r.conn.WithContext(ctx).Model(&Run{}).Save(&run).Error
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +153,7 @@ func (r *RunRepository) ListForProject(ctx context.Context, getForProjectRequest
 	runs := []*Run{}
 	err := r.conn.
 		WithContext(ctx).
+		Model(&Run{}).
 		Offset(getForProjectRequest.Limit*getForProjectRequest.Offset).
 		Limit(getForProjectRequest.Limit).
 		Where("project_id = ?", getForProjectRequest.ProjectID).

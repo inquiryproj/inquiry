@@ -58,6 +58,8 @@ type RepositoryConfig struct {
 type ServerConfig struct {
 	Port          int           `env:"API_PORT" envDefault:"3000"`
 	ShutdownDelay time.Duration `env:"API_SHUTDOWN_DELAY" envDefault:"0s"`
+	AuthEnabled   bool          `env:"API_AUTH_ENABLED" envDefault:"true"`
+	APIKey        string        `env:"API_KEY" envDefault:""`
 }
 
 // NewConfig creates a new Config instance.
