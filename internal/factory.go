@@ -26,7 +26,7 @@ func NewApp() (App, error) {
 	}
 	logger := loggerFactory(cfg.LogLevel, cfg.LogFormat)
 
-	repositoryWrapper, err := repositoryFactory(cfg.RepositoryConfig)
+	repositoryWrapper, err := repositoryFactory(cfg.RepositoryConfig, cfg.ServerConfig.APIKey)
 	if err != nil {
 		logger.Error("failed to initialise repository", slog.String("error", err.Error()))
 		return nil, err
@@ -44,11 +44,20 @@ func NewApp() (App, error) {
 		handlers.WithLogger(logger),
 	)
 
-	return http.NewAPI(handlerWrapper,
+	opts := []http.Opts{
 		http.WithLogger(logger),
 		http.WithPort(cfg.ServerConfig.Port),
 		http.WithShutdownDelay(cfg.ServerConfig.ShutdownDelay),
 		http.WithRunnable(runsConsumer),
+	}
+	if cfg.ServerConfig.AuthEnabled {
+		opts = append(opts, http.WithAuthEnabled(repositoryWrapper.APIKey))
+	} else {
+		opts = append(opts, http.WithAuthDisabled())
+	}
+
+	return http.NewAPI(handlerWrapper,
+		opts...,
 	), nil
 }
 
@@ -119,9 +128,10 @@ func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer runs.Pro
 	return service.NewServiceWrapper(repositoryWrapper, runsProducer)
 }
 
-func repositoryFactory(repositoryConfig RepositoryConfig) (*repository.Wrapper, error) {
+func repositoryFactory(repositoryConfig RepositoryConfig, apiKey string) (*repository.Wrapper, error) {
 	return repository.NewWrapper(
 		repository.WithType(repositoryConfig.RepositoryType.String()),
 		repository.WithDSN(repositoryConfig.DSN),
+		repository.WithAPIKey(apiKey),
 	)
 }

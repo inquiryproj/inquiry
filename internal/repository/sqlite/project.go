@@ -25,7 +25,8 @@ type ProjectRepository struct {
 // GetByName returns a project from sqlite by name.
 func (r *ProjectRepository) GetByName(ctx context.Context, name string) (*domain.Project, error) {
 	project := &Project{}
-	err := r.conn.WithContext(ctx).Where("name = ?", name).First(project).Error
+
+	err := r.conn.WithContext(ctx).Model(&Project{}).Where("name = ?", name).First(project).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("%w %w", domain.ErrProjectNotFound, err)
 	} else if err != nil {
@@ -42,6 +43,7 @@ func (r *ProjectRepository) GetProjects(ctx context.Context, getProjectsRequest 
 	projects := []*Project{}
 	err := r.conn.
 		WithContext(ctx).
+		Model(&Project{}).
 		Offset(getProjectsRequest.Limit * getProjectsRequest.Offset).
 		Limit(getProjectsRequest.Limit).
 		Find(&projects).Error

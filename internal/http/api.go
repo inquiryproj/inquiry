@@ -25,17 +25,21 @@ type Runnable interface {
 
 // Options represents the options for the API.
 type Options struct {
-	Port          int
-	ShutdownDelay time.Duration
-	Logger        *slog.Logger
-	Runnables     []Runnable
+	Port             int
+	ShutdownDelay    time.Duration
+	Logger           *slog.Logger
+	Runnables        []Runnable
+	WithAuthEnabled  bool
+	APIKeyRepository APIKeyRepository
 }
 
 func defaultOptions() *Options {
 	return &Options{
-		Port:          3000,
-		ShutdownDelay: time.Duration(0),
-		Logger:        slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})),
+		Port:             3000,
+		ShutdownDelay:    time.Duration(0),
+		Logger:           slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})),
+		WithAuthEnabled:  true,
+		APIKeyRepository: &apiKeyDenyAll{},
 	}
 }
 
@@ -67,6 +71,21 @@ func WithLogger(logger *slog.Logger) Opts {
 func WithRunnable(runnable Runnable) Opts {
 	return func(o *Options) {
 		o.Runnables = append(o.Runnables, runnable)
+	}
+}
+
+// WithAuthEnabled enables authentication with a given api key repository.
+func WithAuthEnabled(apiKeyRepository APIKeyRepository) Opts {
+	return func(o *Options) {
+		o.WithAuthEnabled = true
+		o.APIKeyRepository = apiKeyRepository
+	}
+}
+
+// WithAuthDisabled disables authentication.
+func WithAuthDisabled() Opts {
+	return func(o *Options) {
+		o.WithAuthEnabled = false
 	}
 }
 
@@ -111,6 +130,9 @@ func NewAPI(handler ServerInterface, opts ...Opts) *API {
 	// Middlewares
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	if options.WithAuthEnabled {
+		e.Use(APIKeyMiddleware(options.APIKeyRepository))
+	}
 
 	return &API{
 		e:             e,

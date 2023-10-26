@@ -3,6 +3,8 @@ package repository
 
 import (
 	"context"
+	"log/slog"
+	"os"
 
 	"github.com/google/uuid"
 
@@ -15,6 +17,7 @@ type Wrapper struct {
 	Project  Project
 	Run      Run
 	Scenario Scenario
+	APIKey   APIKey
 }
 
 // Project is the project repository.
@@ -38,6 +41,11 @@ type Scenario interface {
 	GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error)
 }
 
+// APIKey is the API key repository.
+type APIKey interface {
+	Validate(ctx context.Context, s string) (uuid.UUID, error)
+}
+
 // Type is the type of repository.
 type Type string
 
@@ -58,14 +66,17 @@ func TypeFromString(repositoryType string) Type {
 
 // Options represents the options for the handlers.
 type Options struct {
-	DSN  string
-	Type Type
+	DSN    string
+	Type   Type
+	Logger *slog.Logger
+	APIKey string
 }
 
 func defaultOptions() *Options {
 	return &Options{
-		DSN:  "inquiry.db",
-		Type: TypeSQLite,
+		DSN:    "inquiry.db",
+		Type:   TypeSQLite,
+		Logger: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})),
 	}
 }
 
@@ -86,6 +97,13 @@ func WithType(repositoryType string) Opts {
 	}
 }
 
+// WithAPIKey sets the API key.
+func WithAPIKey(apiKey string) Opts {
+	return func(o *Options) {
+		o.APIKey = apiKey
+	}
+}
+
 // NewWrapper initialises the repository wrapper.
 func NewWrapper(opts ...Opts) (*Wrapper, error) {
 	options := defaultOptions()
@@ -94,15 +112,17 @@ func NewWrapper(opts ...Opts) (*Wrapper, error) {
 	}
 	switch options.Type {
 	case TypeSQLite:
-		return NewSQLiteWrapper(options.DSN)
+		return NewSQLiteWrapper(options.DSN, options)
 	default:
-		return NewSQLiteWrapper(options.DSN)
+		return NewSQLiteWrapper(options.DSN, options)
 	}
 }
 
 // NewSQLiteWrapper initialises sqlite repository implementation.
-func NewSQLiteWrapper(dsn string) (*Wrapper, error) {
-	sqliteRepository, err := sqlite.NewRepository(dsn)
+func NewSQLiteWrapper(dsn string, options *Options) (*Wrapper, error) {
+	sqliteRepository, err := sqlite.NewRepository(dsn, options.Logger, &sqlite.MigrationOptions{
+		APIKey: options.APIKey,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -110,5 +130,6 @@ func NewSQLiteWrapper(dsn string) (*Wrapper, error) {
 		Project:  sqliteRepository.ProjectRepository,
 		Scenario: sqliteRepository.ScenarioRepository,
 		Run:      sqliteRepository.RunRepository,
+		APIKey:   sqliteRepository.APIKeyRepository,
 	}, nil
 }

@@ -3,4 +3,8 @@ reports
 # sqlite db
 *.db
 
+# environment
+.env
+
 scenario.yaml
+

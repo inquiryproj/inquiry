@@ -33,7 +33,7 @@ func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioR
 		Spec:      createScenarioRequest.Spec,
 		ProjectID: createScenarioRequest.ProjectID,
 	}
-	err := r.conn.WithContext(ctx).Create(sqliteScenario).Error
+	err := r.conn.WithContext(ctx).Model(&Scenario{}).Create(sqliteScenario).Error
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
 		return nil, fmt.Errorf("%w %w", domain.ErrScenarioAlreadyExists, err)
 	} else if err != nil {
@@ -45,7 +45,7 @@ func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioR
 // GetForProject returns all scenarios for a given project.
 func (r *ScenarioRepository) GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error) {
 	scenarios := []*Scenario{}
-	err := r.conn.WithContext(ctx).Where("project_id = ?", getForProjectRequest.ProjectID).Find(&scenarios).Error
+	err := r.conn.WithContext(ctx).Model(&Scenario{}).Where("project_id = ?", getForProjectRequest.ProjectID).Find(&scenarios).Error
 	if err != nil {
 		return nil, err
 	}
