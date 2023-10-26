@@ -5,6 +5,9 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/google/uuid"
+
+	"github.com/inquiryproj/inquiry/internal/events"
 	"github.com/inquiryproj/inquiry/internal/events/runs"
 	"github.com/inquiryproj/inquiry/internal/events/runs/run"
 	"github.com/inquiryproj/inquiry/internal/http"
@@ -91,7 +94,7 @@ func leveler(logLevel LogLevel) slog.Leveler {
 	}
 }
 
-func runEventsFactory(repositoryWrapper *repository.Wrapper) (runs.Producer, http.Runnable, error) {
+func runEventsFactory(repositoryWrapper *repository.Wrapper) (events.Producer[uuid.UUID], http.Runnable, error) {
 	runProcessor := processorFactory(repositoryWrapper)
 	producer, consumer, err := runs.NewProducerConsumer(runProcessor)
 	if err != nil {
@@ -101,11 +104,11 @@ func runEventsFactory(repositoryWrapper *repository.Wrapper) (runs.Producer, htt
 }
 
 type runnableConsumer struct {
-	runs.Consumer
+	events.Consumer
 	name string
 }
 
-func newRunnableConsumer(consumer runs.Consumer, name string) http.Runnable {
+func newRunnableConsumer(consumer events.Consumer, name string) http.Runnable {
 	return &runnableConsumer{
 		Consumer: consumer,
 		name:     name,
@@ -124,7 +127,7 @@ func processorFactory(repositoryWrapper *repository.Wrapper) run.Processor {
 	return run.NewProcessor(repositoryWrapper.Scenario, repositoryWrapper.Run)
 }
 
-func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer runs.Producer) service.Wrapper {
+func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer events.Producer[uuid.UUID]) service.Wrapper {
 	return service.NewServiceWrapper(repositoryWrapper, runsProducer)
 }
 

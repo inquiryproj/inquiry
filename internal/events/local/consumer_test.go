@@ -30,7 +30,7 @@ func TestConsumerCloseGraceful(t *testing.T) {
 	mockProcessor := &mockProcessor{}
 
 	stream := make(chan uuid.UUID)
-	c := NewConsumer(stream, mockProcessor)
+	c := NewConsumer(stream, mockProcessor.Process)
 
 	go func() {
 		assert.NoError(t, c.Consume())
@@ -50,7 +50,7 @@ func TestConsumerCloseTimeout(t *testing.T) {
 	}
 
 	stream := make(chan uuid.UUID)
-	c := NewConsumer(stream, mockProcessor, WithCloseTimeout(1*time.Millisecond))
+	c := NewConsumer(stream, mockProcessor.Process, WithCloseTimeout(1*time.Millisecond))
 
 	go func() {
 		assert.NoError(t, c.Consume())

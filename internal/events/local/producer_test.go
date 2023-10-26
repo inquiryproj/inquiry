@@ -15,7 +15,7 @@ func TestProducer(t *testing.T) {
 
 	p := NewProducer(stream)
 
-	c := NewConsumer(stream, mockProcessor)
+	c := NewConsumer(stream, mockProcessor.Process)
 	go func() {
 		assert.NoError(t, c.Consume())
 	}()
