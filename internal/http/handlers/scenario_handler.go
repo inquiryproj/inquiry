@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	"github.com/inquiryproj/inquiry/internal/service"
 )
 
@@ -35,7 +35,7 @@ func newScenarioHandler(scenarioService service.Scenario, opts ...Opts) *Scenari
 
 // CreateScenario create a scenario for a project.
 func (h *ScenarioHandler) CreateScenario(ctx echo.Context, id uuid.UUID) error {
-	httpScenario := &httpInternal.CreateScenarioJSONRequestBody{}
+	httpScenario := &api.CreateScenarioJSONRequestBody{}
 	err := json.NewDecoder(ctx.Request().Body).Decode(&httpScenario)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid create scenario payload")
@@ -54,7 +54,7 @@ func (h *ScenarioHandler) CreateScenario(ctx echo.Context, id uuid.UUID) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to create scenario")
 	}
 
-	return ctx.JSON(http.StatusCreated, httpInternal.Scenario{
+	return ctx.JSON(http.StatusCreated, api.Scenario{
 		ID:        scenario.ID,
 		Name:      scenario.Name,
 		Spec:      scenario.Spec,

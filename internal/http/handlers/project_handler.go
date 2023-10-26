@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	"github.com/inquiryproj/inquiry/internal/service"
 )
 
@@ -33,7 +33,7 @@ func newProjectHandler(projectService service.Project, opts ...Opts) *ProjectHan
 }
 
 // ListProjects lists all projects.
-func (h *ProjectHandler) ListProjects(ctx echo.Context, params httpInternal.ListProjectsParams) error {
+func (h *ProjectHandler) ListProjects(ctx echo.Context, params api.ListProjectsParams) error {
 	listProjectsRequest := &app.ListProjectsRequest{
 		Limit:  100,
 		Offset: 0,
@@ -51,9 +51,9 @@ func (h *ProjectHandler) ListProjects(ctx echo.Context, params httpInternal.List
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to get projects")
 	}
 
-	result := make([]httpInternal.Project, len(projects))
+	result := make([]api.Project, len(projects))
 	for i, project := range projects {
-		result[i] = httpInternal.Project{
+		result[i] = api.Project{
 			ID:   project.ID,
 			Name: project.Name,
 		}
@@ -64,7 +64,7 @@ func (h *ProjectHandler) ListProjects(ctx echo.Context, params httpInternal.List
 
 // CreateProject creates a new project.
 func (h *ProjectHandler) CreateProject(ctx echo.Context) error {
-	httpProject := &httpInternal.Project{}
+	httpProject := &api.Project{}
 	err := json.NewDecoder(ctx.Request().Body).Decode(&httpProject)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid create project payload")
@@ -82,7 +82,7 @@ func (h *ProjectHandler) CreateProject(ctx echo.Context) error {
 		h.logger.Error("unable to create project", slog.String("error", err.Error()))
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to create project")
 	}
-	return ctx.JSON(http.StatusCreated, httpInternal.Project{
+	return ctx.JSON(http.StatusCreated, api.Project{
 		ID:   project.ID,
 		Name: project.Name,
 	})

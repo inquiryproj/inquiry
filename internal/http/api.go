@@ -1,3 +1,4 @@
+// Package http provides the API server and its corresponding components.
 package http
 
 import (
@@ -14,6 +15,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
+
+	"github.com/inquiryproj/inquiry/internal/http/api"
 )
 
 // Runnable is the interface for runnable components managed by the API.
@@ -97,13 +100,14 @@ type API struct {
 	shutdownDelay time.Duration
 	runnables     []Runnable
 
-	errChan chan error
+	errChan      chan error
+	shutDownChan chan os.Signal
 
 	logger *slog.Logger
 }
 
 // NewAPI creates a new API server.
-func NewAPI(handler ServerInterface, opts ...Opts) *API {
+func NewAPI(handler api.ServerInterface, opts ...Opts) *API {
 	options := defaultOptions()
 	for _, opt := range opts {
 		opt(options)
@@ -125,7 +129,7 @@ func NewAPI(handler ServerInterface, opts ...Opts) *API {
 			},
 		),
 	)
-	RegisterHandlers(e, handler)
+	api.RegisterHandlers(e, handler)
 
 	// Middlewares
 	e.Use(middleware.Recover())
@@ -133,9 +137,11 @@ func NewAPI(handler ServerInterface, opts ...Opts) *API {
 	if options.WithAuthEnabled {
 		e.Use(APIKeyMiddleware(options.APIKeyRepository))
 	}
-
+	shutDownChan := make(chan os.Signal, 1)
+	signal.Notify(shutDownChan, syscall.SIGINT, syscall.SIGTERM)
 	return &API{
 		e:             e,
+		shutDownChan:  shutDownChan,
 		port:          options.Port,
 		shutdownDelay: options.ShutdownDelay,
 		runnables:     options.Runnables,
@@ -147,15 +153,13 @@ func NewAPI(handler ServerInterface, opts ...Opts) *API {
 
 // Run runs the API server and handles graceful shutdown.
 func (a *API) Run() error {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	go a.startHTTPServer()
 	go a.startRunnables()
 
 	select {
 	case err := <-a.errChan:
 		return err
-	case <-c:
+	case <-a.shutDownChan:
 	}
 
 	return a.shutDownServer()

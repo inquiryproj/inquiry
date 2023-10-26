@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	httpMocks "github.com/inquiryproj/inquiry/internal/http/mocks"
 	serviceMocks "github.com/inquiryproj/inquiry/internal/service/mocks"
 )
@@ -27,11 +27,11 @@ func TestCreateProject(t *testing.T) {
 		{
 			name: "success",
 			setupMocks: func(echoMockContext *httpMocks.Context, projectServiceMock *serviceMocks.Project) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.Project{
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.Project{
 					Name: "test",
 				}))
 				echoMockContext.On("JSON", http.StatusCreated, mock.Anything).Run(func(args mock.Arguments) {
-					assert.Equal(t, httpInternal.Project{
+					assert.Equal(t, api.Project{
 						ID:   projectID,
 						Name: "test",
 					}, args.Get(1))
@@ -47,7 +47,7 @@ func TestCreateProject(t *testing.T) {
 		{
 			name: "unable to create project, internal",
 			setupMocks: func(echoMockContext *httpMocks.Context, projectServiceMock *serviceMocks.Project) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.Project{
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.Project{
 					Name: "test",
 				}))
 				projectServiceMock.On("CreateProject", mock.Anything, &app.CreateProjectRequest{
@@ -60,7 +60,7 @@ func TestCreateProject(t *testing.T) {
 		{
 			name: "unable to create project, already exists",
 			setupMocks: func(echoMockContext *httpMocks.Context, projectServiceMock *serviceMocks.Project) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.Project{
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.Project{
 					Name: "test",
 				}))
 				projectServiceMock.On("CreateProject", mock.Anything, &app.CreateProjectRequest{
@@ -73,7 +73,7 @@ func TestCreateProject(t *testing.T) {
 		{
 			name: "unable to create project, already exists",
 			setupMocks: func(echoMockContext *httpMocks.Context, projectServiceMock *serviceMocks.Project) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.Project{}))
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.Project{}))
 			},
 			expectErr:     true,
 			errStatusCode: http.StatusBadRequest,
@@ -107,7 +107,7 @@ func TestListProjects(t *testing.T) {
 	tests := []struct {
 		name              string
 		setupMocks        func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Project)
-		listProjectParams httpInternal.ListProjectsParams
+		listProjectParams api.ListProjectsParams
 		expectErr         bool
 		errStatusCode     int
 	}{
@@ -116,7 +116,7 @@ func TestListProjects(t *testing.T) {
 			setupMocks: func(echoMockContext *httpMocks.Context, projectServiceMock *serviceMocks.Project) {
 				echoMockContext.On("Request").Return(&http.Request{})
 				echoMockContext.On("JSON", http.StatusOK, mock.Anything).Run(func(args mock.Arguments) {
-					assert.Equal(t, []httpInternal.Project{
+					assert.Equal(t, []api.Project{
 						{
 							ID:   projectID,
 							Name: "test",
@@ -144,7 +144,7 @@ func TestListProjects(t *testing.T) {
 					Offset: 42,
 				}).Return([]*app.Project{}, nil)
 			},
-			listProjectParams: httpInternal.ListProjectsParams{
+			listProjectParams: api.ListProjectsParams{
 				Limit:  newInt(42),
 				Offset: newInt(42),
 			},

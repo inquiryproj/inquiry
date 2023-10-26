@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	httpMocks "github.com/inquiryproj/inquiry/internal/http/mocks"
 	serviceMocks "github.com/inquiryproj/inquiry/internal/service/mocks"
 )
@@ -28,13 +28,13 @@ func TestCreateScenario(t *testing.T) {
 		{
 			name: "success",
 			setupMocks: func(echoMockContext *httpMocks.Context, scenarioServiceMock *serviceMocks.Scenario) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.CreateScenarioJSONRequestBody{
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.CreateScenarioJSONRequestBody{
 					Name:     "test",
 					Spec:     "base64yaml",
 					SpecType: "yaml",
 				}))
 				echoMockContext.On("JSON", http.StatusCreated, mock.Anything).Run(func(args mock.Arguments) {
-					assert.Equal(t, httpInternal.Scenario{
+					assert.Equal(t, api.Scenario{
 						ID:        scenarioID,
 						ProjectID: projectID,
 						Name:      "test",
@@ -59,7 +59,7 @@ func TestCreateScenario(t *testing.T) {
 		{
 			name: "unable to create scenario, internal",
 			setupMocks: func(echoMockContext *httpMocks.Context, scenarioServiceMock *serviceMocks.Scenario) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.Project{
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.Project{
 					Name: "test",
 				}))
 				scenarioServiceMock.On("CreateScenario", mock.Anything, mock.Anything).Return(nil, assert.AnError)
@@ -70,7 +70,7 @@ func TestCreateScenario(t *testing.T) {
 		{
 			name: "unable to create scenario, already exists",
 			setupMocks: func(echoMockContext *httpMocks.Context, scenarioServiceMock *serviceMocks.Scenario) {
-				echoMockContext.On("Request").Return(httpRequestForStruct(t, httpInternal.Scenario{
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.Scenario{
 					Name:     "test",
 					Spec:     "base64yaml",
 					SpecType: "yaml",
