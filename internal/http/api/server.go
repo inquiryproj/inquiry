@@ -43,6 +43,8 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) ListProjects(ctx echo.Context) error {
 	var err error
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListProjectsParams
 	// ------------- Optional query parameter "limit" -------------
@@ -68,6 +70,8 @@ func (w *ServerInterfaceWrapper) ListProjects(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) CreateProject(ctx echo.Context) error {
 	var err error
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.CreateProject(ctx)
 	return err
@@ -84,6 +88,8 @@ func (w *ServerInterfaceWrapper) RunProject(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.RunProject(ctx, id)
 	return err
@@ -99,6 +105,8 @@ func (w *ServerInterfaceWrapper) GetRunsForProject(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetRunsForProjectParams
@@ -132,6 +140,8 @@ func (w *ServerInterfaceWrapper) CreateScenario(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.CreateScenario(ctx, id)
 	return err
@@ -147,6 +157,8 @@ func (w *ServerInterfaceWrapper) RunProjectByName(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter name: %s", err))
 	}
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.RunProjectByName(ctx, name)

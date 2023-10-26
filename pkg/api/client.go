@@ -17,6 +17,10 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+const (
+	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
+)
+
 // Defines values for ProjectRunOutputState.
 const (
 	Cancelled ProjectRunOutputState = "cancelled"

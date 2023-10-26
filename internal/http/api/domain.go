@@ -7,6 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	ApiKeyAuthScopes = "ApiKeyAuth.Scopes"
+)
+
 // Defines values for ProjectRunOutputState.
 const (
 	Cancelled ProjectRunOutputState = "cancelled"

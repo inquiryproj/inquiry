@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.0
 servers:
   - url: http://localhost:3000
 info:
@@ -6,7 +6,7 @@ info:
   description: The Inquiry Server API
   version: 0.0.1
   contact:
-    name: Wim Spaargaren
+    name: Inquiry
     url: "https://github.com/inquiryproj/inquiry"
     email: "wim_spaargaren@live.nl"
 tags:
@@ -21,6 +21,11 @@ tags:
   - name: list
     description: List endpoints
 components:
+  securitySchemes:
+    ApiKeyAuth:        
+      type: apiKey
+      in: header       
+      name: Authorization
   schemas:
     Project:
       type: object
@@ -164,6 +169,8 @@ components:
       properties:
         message:
           type: string
+security:
+  - ApiKeyAuth: []
 paths:
   "/v1/projects":
     description: API endpoints for managing projects
