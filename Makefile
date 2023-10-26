@@ -49,8 +49,8 @@ $(GOBIN)/oapi-codegen:
 # Generate Go server interface, domain models & client from OpenAPI Spec
 oapi-gen: | $(GOBIN)/oapi-codegen
 	# @oapi-codegen -generate spec -package http api/api-spec.yml  > internal/app/http/spec.go
-	@oapi-codegen -generate types -package http api/api-spec.yml  > internal/http/domain.go
-	@oapi-codegen -generate server -package http api/api-spec.yml  > internal/http/server.go
+	@oapi-codegen -generate types -package api api/api-spec.yml  > internal/http/api/domain.go
+	@oapi-codegen -generate server -package api api/api-spec.yml  > internal/http/api/server.go
 	@oapi-codegen -generate client,types -package api api/api-spec.yml  > pkg/api/client.go
 
 /usr/local/bin/spectral:

@@ -5,12 +5,12 @@ import (
 	"log/slog"
 	"os"
 
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	"github.com/inquiryproj/inquiry/internal/service"
 )
 
 // validate server interface implementation.
-var _ httpInternal.ServerInterface = &struct {
+var _ api.ServerInterface = &struct {
 	*ProjectHandler
 	*ScenarioHandler
 	*RunHandler

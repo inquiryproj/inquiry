@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	httpMocks "github.com/inquiryproj/inquiry/internal/http/mocks"
 	serviceMocks "github.com/inquiryproj/inquiry/internal/service/mocks"
 )
@@ -31,11 +31,11 @@ func TestRunProject(t *testing.T) {
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
 				echoMockContext.On("Request").Return(&http.Request{})
 				echoMockContext.On("JSON", http.StatusOK, mock.Anything).Run(func(args mock.Arguments) {
-					assert.Equal(t, httpInternal.ProjectRunOutput{
+					assert.Equal(t, api.ProjectRunOutput{
 						ID:        runID,
 						ProjectID: projectID,
 						Success:   false,
-						State:     httpInternal.Pending,
+						State:     api.Pending,
 					}, args.Get(1))
 				}).Return(nil)
 				runnerServiceMock.On("RunProject", mock.Anything, &app.RunProjectRequest{
@@ -97,11 +97,11 @@ func TestRunProjectByName(t *testing.T) {
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
 				echoMockContext.On("Request").Return(&http.Request{})
 				echoMockContext.On("JSON", http.StatusOK, mock.Anything).Run(func(args mock.Arguments) {
-					assert.Equal(t, httpInternal.ProjectRunOutput{
+					assert.Equal(t, api.ProjectRunOutput{
 						ID:        runID,
 						ProjectID: projectID,
 						Success:   false,
-						State:     httpInternal.Pending,
+						State:     api.Pending,
 					}, args.Get(1))
 				}).Return(nil)
 				runnerServiceMock.On("RunProjectByName", mock.Anything, &app.RunProjectByNameRequest{
@@ -154,7 +154,7 @@ func TestGetRunsForProject(t *testing.T) {
 
 	tests := []struct {
 		name                    string
-		getRunsForProjectParams httpInternal.GetRunsForProjectParams
+		getRunsForProjectParams api.GetRunsForProjectParams
 		setupMocks              func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner)
 		expectErr               bool
 		errStatusCode           int
@@ -164,18 +164,18 @@ func TestGetRunsForProject(t *testing.T) {
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
 				echoMockContext.On("Request").Return(&http.Request{})
 				echoMockContext.On("JSON", http.StatusOK, mock.Anything).Run(func(args mock.Arguments) {
-					assert.Equal(t, []httpInternal.ProjectRunOutput{
+					assert.Equal(t, []api.ProjectRunOutput{
 						{
 							ID:        runID,
 							ProjectID: projectID,
 							Success:   true,
-							State:     httpInternal.Success,
-							ScenarioRunDetails: []httpInternal.ScenarioRunDetails{
+							State:     api.Success,
+							ScenarioRunDetails: []api.ScenarioRunDetails{
 								{
 									Name:         "Test Scenario 1",
 									DurationInMs: 1000,
 									Assertions:   42,
-									Steps: []httpInternal.StepRunDetails{
+									Steps: []api.StepRunDetails{
 										{
 											Name:                "Test Step 1",
 											Assertions:          42,
@@ -215,7 +215,7 @@ func TestGetRunsForProject(t *testing.T) {
 			},
 			expectErr:     true,
 			errStatusCode: http.StatusInternalServerError,
-			getRunsForProjectParams: httpInternal.GetRunsForProjectParams{
+			getRunsForProjectParams: api.GetRunsForProjectParams{
 				Limit:  newInt(50),
 				Offset: newInt(10),
 			},

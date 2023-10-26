@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	httpInternal "github.com/inquiryproj/inquiry/internal/http"
+	"github.com/inquiryproj/inquiry/internal/http/api"
 	"github.com/inquiryproj/inquiry/internal/service"
 )
 
@@ -58,17 +58,17 @@ func (h *RunHandler) RunProjectByName(ctx echo.Context, name string) error {
 	return ctx.JSON(http.StatusOK, projectRunOutputToHTTP(projectRunOutput))
 }
 
-func projectRunOutputToHTTP(projectRunOutput *app.ProjectRunOutput) httpInternal.ProjectRunOutput {
-	return httpInternal.ProjectRunOutput{
+func projectRunOutputToHTTP(projectRunOutput *app.ProjectRunOutput) api.ProjectRunOutput {
+	return api.ProjectRunOutput{
 		ID:        projectRunOutput.ID,
 		ProjectID: projectRunOutput.ProjectID,
 		Success:   projectRunOutput.Success,
-		State:     httpInternal.ProjectRunOutputState(projectRunOutput.State),
+		State:     api.ProjectRunOutputState(projectRunOutput.State),
 	}
 }
 
 // GetRunsForProject returns runs for a given project.
-func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params httpInternal.GetRunsForProjectParams) error {
+func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params api.GetRunsForProjectParams) error {
 	getRunsForProjectRequest := &app.GetRunsForProjectRequest{
 		Limit:     100,
 		Offset:    0,
@@ -86,13 +86,13 @@ func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params ht
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to get runs for project")
 	}
 
-	result := make([]httpInternal.ProjectRunOutput, len(runs.Runs))
+	result := make([]api.ProjectRunOutput, len(runs.Runs))
 	for i, run := range runs.Runs {
-		result[i] = httpInternal.ProjectRunOutput{
+		result[i] = api.ProjectRunOutput{
 			ID:                 run.ID,
 			ProjectID:          run.ProjectID,
 			Success:            run.Success,
-			State:              httpInternal.ProjectRunOutputState(run.State),
+			State:              api.ProjectRunOutputState(run.State),
 			ScenarioRunDetails: appScenarioDetailsToHTTPScenarioDetails(run.ScenarioRunDetails),
 		}
 	}
@@ -100,10 +100,10 @@ func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params ht
 	return ctx.JSON(http.StatusOK, result)
 }
 
-func appScenarioDetailsToHTTPScenarioDetails(scenario []*app.ScenarioRunDetails) []httpInternal.ScenarioRunDetails {
-	result := []httpInternal.ScenarioRunDetails{}
+func appScenarioDetailsToHTTPScenarioDetails(scenario []*app.ScenarioRunDetails) []api.ScenarioRunDetails {
+	result := []api.ScenarioRunDetails{}
 	for _, detail := range scenario {
-		result = append(result, httpInternal.ScenarioRunDetails{
+		result = append(result, api.ScenarioRunDetails{
 			Name:         detail.Name,
 			DurationInMs: int(detail.Duration.Milliseconds()),
 			Assertions:   detail.Assertions,
@@ -114,10 +114,10 @@ func appScenarioDetailsToHTTPScenarioDetails(scenario []*app.ScenarioRunDetails)
 	return result
 }
 
-func appStepsRunDetailsToHTTPStepRunDetails(steps []*app.StepRunDetails) []httpInternal.StepRunDetails {
-	result := []httpInternal.StepRunDetails{}
+func appStepsRunDetailsToHTTPStepRunDetails(steps []*app.StepRunDetails) []api.StepRunDetails {
+	result := []api.StepRunDetails{}
 	for _, detail := range steps {
-		result = append(result, httpInternal.StepRunDetails{
+		result = append(result, api.StepRunDetails{
 			Name:                detail.Name,
 			Assertions:          detail.Assertions,
 			URL:                 detail.URL,
