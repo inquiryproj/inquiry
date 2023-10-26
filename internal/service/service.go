@@ -4,8 +4,10 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/inquiryproj/inquiry/internal/app"
-	"github.com/inquiryproj/inquiry/internal/events/runs"
+	"github.com/inquiryproj/inquiry/internal/events"
 	"github.com/inquiryproj/inquiry/internal/repository"
 	"github.com/inquiryproj/inquiry/internal/service/options"
 	"github.com/inquiryproj/inquiry/internal/service/project"
@@ -41,7 +43,7 @@ type Runner interface {
 // NewServiceWrapper initialises all services.
 func NewServiceWrapper(
 	repositoryWrapper *repository.Wrapper,
-	runsProducer runs.Producer,
+	runsProducer events.Producer[uuid.UUID],
 	opts ...options.Opts,
 ) Wrapper {
 	return &struct {

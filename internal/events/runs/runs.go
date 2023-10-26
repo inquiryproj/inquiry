@@ -1,9 +1,11 @@
+// Package runs initialises the runs event stream consumer and producer.
 package runs
 
 import (
 	"github.com/google/uuid"
 
-	"github.com/inquiryproj/inquiry/internal/events/runs/local"
+	"github.com/inquiryproj/inquiry/internal/events"
+	"github.com/inquiryproj/inquiry/internal/events/local"
 	"github.com/inquiryproj/inquiry/internal/events/runs/run"
 )
 
@@ -30,7 +32,7 @@ func defaultOptions() *Options {
 type Opts func(*Options)
 
 // NewProducerConsumer creates a new producer and consumer.
-func NewProducerConsumer(runProcessor run.Processor, opts ...Opts) (Producer, Consumer, error) {
+func NewProducerConsumer(runProcessor run.Processor, opts ...Opts) (events.Producer[uuid.UUID], events.Consumer, error) {
 	options := defaultOptions()
 	for _, opt := range opts {
 		opt(options)
@@ -39,7 +41,7 @@ func NewProducerConsumer(runProcessor run.Processor, opts ...Opts) (Producer, Co
 	switch options.ConsumerType {
 	case ConsumerTypeLocal:
 		stream := make(chan uuid.UUID)
-		return local.NewProducer(stream), local.NewConsumer(stream, runProcessor), nil
+		return local.NewProducer(stream), local.NewConsumer(stream, runProcessor.Process), nil
 	default:
 		return nil, nil, ErrUnknownConsumerType
 	}

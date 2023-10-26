@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	"github.com/inquiryproj/inquiry/internal/events/runs"
+	"github.com/inquiryproj/inquiry/internal/events"
 	"github.com/inquiryproj/inquiry/internal/repository"
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
 	serviceOptions "github.com/inquiryproj/inquiry/internal/service/options"
@@ -20,7 +20,7 @@ type Runner struct {
 	projectRepository  repository.Project
 	scenarioRepository repository.Scenario
 	runRepository      repository.Run
-	runsProducer       runs.Producer
+	runsProducer       events.Producer[uuid.UUID]
 
 	logger *slog.Logger
 }
@@ -30,7 +30,7 @@ func NewService(
 	projectRepository repository.Project,
 	scenarioRepository repository.Scenario,
 	runRepository repository.Run,
-	runsProducer runs.Producer,
+	runsProducer events.Producer[uuid.UUID],
 	opts ...serviceOptions.Opts,
 ) *Runner {
 	options := serviceOptions.DefaultOptions()

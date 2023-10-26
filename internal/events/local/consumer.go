@@ -7,11 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/wimspaargaren/workers"
-
-	"github.com/inquiryproj/inquiry/internal/app"
-	"github.com/inquiryproj/inquiry/internal/events/runs/run"
 )
 
 // Options represents the options for the consumer.
@@ -43,14 +39,14 @@ func defaultOptions() *Options {
 var ErrCloseTimeout = fmt.Errorf("consumer close timed out")
 
 // Consumer is the local consumer implementation.
-type Consumer struct {
-	stream    chan uuid.UUID
+type Consumer[T any, U any] struct {
+	stream    chan T
 	closeChan chan (struct{})
 	doneChan  chan (struct{})
 
 	closeTimeout time.Duration
 
-	workerPool workers.Pool[uuid.UUID, *app.ProjectRunOutput]
+	workerPool workers.Pool[T, U]
 }
 
 // NewConsumer creates a new local consumer.
@@ -58,19 +54,19 @@ type Consumer struct {
 // In case of a shutdown, the consumer will try to process all runs, within the given timeout.
 // If the timeout is reached, the consumer will stop processing runs and set all non finished
 // runs to canceled.
-func NewConsumer(stream chan (uuid.UUID), runProcessor run.Processor, opts ...Opts) *Consumer {
+func NewConsumer[T any, U any](stream chan (T), processFunc func(T) (U, error), opts ...Opts) *Consumer[T, U] {
 	options := defaultOptions()
 	for _, opt := range opts {
 		opt(options)
 	}
-	c := &Consumer{
+	c := &Consumer[T, U]{
 		stream:       stream,
 		closeChan:    make(chan (struct{})),
 		doneChan:     make(chan (struct{})),
 		closeTimeout: options.CloseTimeout,
 	}
 	workerPool := workers.NewUnBufferedPool(context.Background(),
-		runProcessor.Process,
+		processFunc,
 		workers.WithWorkers(options.ParallelProcessors),
 	)
 	c.workerPool = workerPool
@@ -78,7 +74,7 @@ func NewConsumer(stream chan (uuid.UUID), runProcessor run.Processor, opts ...Op
 }
 
 // Consume consumes the stream.
-func (c *Consumer) Consume() error {
+func (c *Consumer[T, U]) Consume() error {
 	go c.processResults()
 	for {
 		select {
@@ -94,7 +90,7 @@ func (c *Consumer) Consume() error {
 	}
 }
 
-func (c *Consumer) processResults() {
+func (c *Consumer[T, U]) processResults() {
 	x, y := c.workerPool.ResultChannels()
 	for {
 		select {
@@ -113,7 +109,7 @@ func (c *Consumer) processResults() {
 }
 
 // Shutdown shuts the consumer down.
-func (c *Consumer) Shutdown(ctx context.Context) error {
+func (c *Consumer[T, U]) Shutdown(ctx context.Context) error {
 	go func() {
 		c.closeChan <- struct{}{}
 	}()

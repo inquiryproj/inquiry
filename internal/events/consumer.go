@@ -1,5 +1,5 @@
-// Package runs is the event stream for runs.
-package runs
+// Package events is the definition for event consumer & producer.
+package events
 
 import "context"
 
