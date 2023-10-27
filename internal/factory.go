@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/google/uuid"
+
 	"github.com/inquiryproj/inquiry/internal/events"
 	"github.com/inquiryproj/inquiry/internal/events/completions"
 	"github.com/inquiryproj/inquiry/internal/events/runs"
@@ -110,7 +112,7 @@ func notifiersFactory(notifiersConfig NotifiersConfig) []notifiers.Notifier {
 	return notifiers.NewNotifiers(notifierOpts...)
 }
 
-func completionEventsFactory(notifierServices []notifiers.Notifier, repositoryWrapper *repository.Wrapper) (events.Producer, http.Runnable, error) {
+func completionEventsFactory(notifierServices []notifiers.Notifier, repositoryWrapper *repository.Wrapper) (events.Producer[uuid.UUID], http.Runnable, error) {
 	completionProcessor := completionProcessorFactory(notifierServices, repositoryWrapper)
 	producer, consumer, err := completions.NewProducerConsumer(completionProcessor)
 	if err != nil {
@@ -119,7 +121,7 @@ func completionEventsFactory(notifierServices []notifiers.Notifier, repositoryWr
 	return producer, newRunnableConsumer(consumer, "completion consumer"), nil
 }
 
-func runEventsFactory(completionsProducer events.Producer, repositoryWrapper *repository.Wrapper) (events.Producer, http.Runnable, error) {
+func runEventsFactory(completionsProducer events.Producer[uuid.UUID], repositoryWrapper *repository.Wrapper) (events.Producer[uuid.UUID], http.Runnable, error) {
 	runProcessor := runProcessorFactory(completionsProducer, repositoryWrapper)
 	producer, consumer, err := runs.NewProducerConsumer(runProcessor)
 	if err != nil {
@@ -152,11 +154,11 @@ func completionProcessorFactory(notifierServices []notifiers.Notifier, repositor
 	return completions.NewProcessor(notifierServices, repositoryWrapper.Run, repositoryWrapper.Project)
 }
 
-func runProcessorFactory(completionsProducer events.Producer, repositoryWrapper *repository.Wrapper) runs.Processor {
+func runProcessorFactory(completionsProducer events.Producer[uuid.UUID], repositoryWrapper *repository.Wrapper) runs.Processor {
 	return runs.NewProcessor(completionsProducer, repositoryWrapper.Scenario, repositoryWrapper.Run)
 }
 
-func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer events.Producer) service.Wrapper {
+func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer events.Producer[uuid.UUID]) service.Wrapper {
 	return service.NewServiceWrapper(repositoryWrapper, runsProducer)
 }
 
