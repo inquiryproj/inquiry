@@ -19,7 +19,7 @@ func TestProducer(t *testing.T) {
 	go func() {
 		assert.NoError(t, c.Consume())
 	}()
-	assert.NoError(t, p.Produce(uuid.New()))
+	assert.NoError(t, p.Produce(context.TODO(), uuid.New()))
 	assert.NoError(t, c.Shutdown(context.Background()))
 	assert.Equal(t, 1, mockProcessor.counter)
 }

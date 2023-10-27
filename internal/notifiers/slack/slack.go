@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/slack-go/slack"
+
+	"github.com/inquiryproj/inquiry/internal/notifiers/domain"
 )
 
 const (
@@ -32,58 +34,9 @@ type ScenarioRunDetails struct {
 	Success              bool
 }
 
-// FIXME: Remove this serves as an example for integration test
-// var projectRunSuccess *ProjectRun = &ProjectRun{
-// 	Name:     "Test Project",
-// 	Success:  true,
-// 	Version:  "1.0.0",
-// 	Duration: time.Second*10 + time.Millisecond*500,
-// 	Time:     time.Now(),
-// 	ScenarioRuns: []*ScenarioRunDetails{
-// 		{
-// 			Name:                 "Test Scenario 1",
-// 			Duration:             time.Second*5 + time.Millisecond*500,
-// 			Assertions:           10,
-// 			SuccessfulAssertions: 10,
-// 			Success:              true,
-// 		},
-// 		{
-// 			Name:                 "Test Scenario 2",
-// 			Duration:             time.Second*5 + time.Millisecond*500,
-// 			Assertions:           6,
-// 			SuccessfulAssertions: 6,
-// 			Success:              true,
-// 		},
-// 	},
-// }
-
-// var projectRunFailure *ProjectRun = &ProjectRun{
-// 	Name:     "Test Project",
-// 	Success:  false,
-// 	Version:  "1.0.0",
-// 	Duration: time.Second*10 + time.Millisecond*500,
-// 	Time:     time.Now(),
-// 	ScenarioRuns: []*ScenarioRunDetails{
-// 		{
-// 			Name:                 "Test Scenario 1",
-// 			Duration:             time.Second*5 + time.Millisecond*500,
-// 			Assertions:           10,
-// 			SuccessfulAssertions: 8,
-// 			Success:              false,
-// 		},
-// 		{
-// 			Name:                 "Test Scenario 2",
-// 			Duration:             time.Second*5 + time.Millisecond*500,
-// 			Assertions:           6,
-// 			SuccessfulAssertions: 6,
-// 			Success:              true,
-// 		},
-// 	},
-// }
-
 // Client is the interface for sending slack messages.
 type Client interface {
-	SendProjectRun(ctx context.Context, projectRun *ProjectRun) error
+	SendCompletion(ctx context.Context, projectRun *domain.ProjectRun) error
 }
 
 // NewClient creates a new slack client.
@@ -98,7 +51,8 @@ type client struct {
 }
 
 // SendProjectRun sends a project run to slack.
-func (c *client) SendProjectRun(ctx context.Context, projectRun *ProjectRun) error {
+func (c *client) SendCompletion(ctx context.Context, projectRun *domain.ProjectRun) error {
+	// FIXME we might want to be able to send to different webhooks for different projects.
 	return slack.PostWebhookContext(ctx, c.webhookURL, &slack.WebhookMessage{
 		Username: slackUserName,
 		IconURL:  "https://github.com/inquiryproj/inquiry/blob/main/assets/logo.png?raw=true",
@@ -107,7 +61,7 @@ func (c *client) SendProjectRun(ctx context.Context, projectRun *ProjectRun) err
 	)
 }
 
-func buildSlackMessageBlock(projectRun *ProjectRun) *slack.Blocks {
+func buildSlackMessageBlock(projectRun *domain.ProjectRun) *slack.Blocks {
 	return &slack.Blocks{
 		BlockSet: []slack.Block{
 			buildHeader(projectRun),
@@ -117,14 +71,14 @@ func buildSlackMessageBlock(projectRun *ProjectRun) *slack.Blocks {
 	}
 }
 
-func buildHeader(projectRun *ProjectRun) *slack.HeaderBlock {
+func buildHeader(projectRun *domain.ProjectRun) *slack.HeaderBlock {
 	if projectRun.Success {
 		return slack.NewHeaderBlock(slack.NewTextBlockObject("plain_text", fmt.Sprintf("Project %s success  :white_check_mark:", projectRun.Name), false, false))
 	}
 	return slack.NewHeaderBlock(slack.NewTextBlockObject("plain_text", fmt.Sprintf("Project %s failed :x:", projectRun.Name), false, false))
 }
 
-func buildRunOverviewSection(projectRun *ProjectRun) *slack.SectionBlock {
+func buildRunOverviewSection(projectRun *domain.ProjectRun) *slack.SectionBlock {
 	return slack.NewSectionBlock(
 		nil,
 		[]*slack.TextBlockObject{
@@ -135,7 +89,7 @@ func buildRunOverviewSection(projectRun *ProjectRun) *slack.SectionBlock {
 	)
 }
 
-func buildScenarioDetailsSection(projectRun *ProjectRun) *slack.SectionBlock {
+func buildScenarioDetailsSection(projectRun *domain.ProjectRun) *slack.SectionBlock {
 	scenarios := ""
 	assertions := ""
 	for _, s := range projectRun.ScenarioRuns {

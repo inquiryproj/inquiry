@@ -1,6 +1,10 @@
 package local
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // Producer is the local producer implementation.
 type Producer struct {
@@ -15,7 +19,7 @@ func NewProducer(stream chan uuid.UUID) *Producer {
 }
 
 // Produce produces a new project run.
-func (p *Producer) Produce(projectID uuid.UUID) error {
+func (p *Producer) Produce(_ context.Context, projectID uuid.UUID) error {
 	p.stream <- projectID
 	return nil
 }

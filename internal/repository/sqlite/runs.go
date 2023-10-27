@@ -73,7 +73,7 @@ func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.
 	run := &Run{
 		ProjectID:       createRunRequest.ProjectID,
 		State:           RunStatePending,
-		ScenarioDetails: []byte(`{}`),
+		ScenarioDetails: []byte(`[]`),
 	}
 	err := r.conn.WithContext(ctx).Model(&Run{}).Create(run).Error
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.
 	}
 	run.ScenarioDetails = b
 
-	err = r.conn.WithContext(ctx).Model(&Run{}).Save(&run).Error
+	err = r.conn.WithContext(ctx).Model(&Run{}).Where("id = ?", updateRunRequest.ID).Save(&run).Error
 	if err != nil {
 		return nil, err
 	}

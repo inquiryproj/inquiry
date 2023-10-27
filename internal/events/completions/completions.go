@@ -31,7 +31,7 @@ func defaultOptions() *Options {
 type Opts func(*Options)
 
 // NewProducerConsumer creates a new producer and consumer.
-func NewProducerConsumer(completionsProcessor Processor, opts ...Opts) (events.Producer[uuid.UUID], events.Consumer, error) {
+func NewProducerConsumer(completionsProcessor Processor, opts ...Opts) (events.Producer, events.Consumer, error) {
 	options := defaultOptions()
 	for _, opt := range opts {
 		opt(options)

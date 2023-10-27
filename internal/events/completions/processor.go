@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/inquiryproj/inquiry/internal/notifiers"
+	notifierDomain "github.com/inquiryproj/inquiry/internal/notifiers/domain"
 	"github.com/inquiryproj/inquiry/internal/repository"
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
 )
@@ -14,7 +15,7 @@ import (
 // Notifier is a notifier which can send completions.
 type Notifier interface {
 	// SendCompletion sends a completion message.
-	SendCompletion(ctx context.Context, projectRun notifiers.ProjectRun) error
+	SendCompletion(ctx context.Context, projectRun *notifierDomain.ProjectRun) error
 }
 
 // Processor processes runs.
@@ -24,14 +25,14 @@ type Processor interface {
 }
 
 type processor struct {
-	completionNotifiers []Notifier
+	completionNotifiers []notifiers.Notifier
 	runRepository       repository.Run
 	projectRepository   repository.Project
 }
 
 // NewProcessor creates a new processor.
 func NewProcessor(
-	completionNotifiers []Notifier,
+	completionNotifiers []notifiers.Notifier,
 	runRepository repository.Run,
 	projectRepository repository.Project,
 ) Processor {
@@ -66,8 +67,8 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 	return runID, nil
 }
 
-func projectAndRunToProjectRun(project *domain.Project, run *domain.Run) notifiers.ProjectRun {
-	projectRun := notifiers.ProjectRun{
+func projectAndRunToProjectRun(project *domain.Project, run *domain.Run) *notifierDomain.ProjectRun {
+	projectRun := &notifierDomain.ProjectRun{
 		Name:    project.Name,
 		Success: run.Success,
 		// FIXME add version to runs
@@ -84,7 +85,7 @@ func projectAndRunToProjectRun(project *domain.Project, run *domain.Run) notifie
 				successfullAssertions++
 			}
 		}
-		scenarioRun := &notifiers.ScenarioRunDetails{
+		scenarioRun := &notifierDomain.ScenarioRunDetails{
 			Name:                 s.Name,
 			Success:              s.Success,
 			Duration:             s.Duration,

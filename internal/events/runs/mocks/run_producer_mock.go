@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	uuid "github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,13 +14,13 @@ type Producer struct {
 	mock.Mock
 }
 
-// Produce provides a mock function with given fields: runID
-func (_m *Producer) Produce(runID uuid.UUID) error {
-	ret := _m.Called(runID)
+// Produce provides a mock function with given fields: ctx, runID
+func (_m *Producer) Produce(ctx context.Context, runID uuid.UUID) error {
+	ret := _m.Called(ctx, runID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(uuid.UUID) error); ok {
-		r0 = rf(runID)
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = rf(ctx, runID)
 	} else {
 		r0 = ret.Error(0)
 	}

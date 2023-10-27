@@ -33,6 +33,8 @@ type Config struct {
 
 	RepositoryConfig RepositoryConfig
 	ServerConfig     ServerConfig
+
+	NotifiersConfig NotifiersConfig
 }
 
 // RepositoryType is the type of repository.
@@ -60,6 +62,16 @@ type ServerConfig struct {
 	ShutdownDelay time.Duration `env:"API_SHUTDOWN_DELAY" envDefault:"0s"`
 	AuthEnabled   bool          `env:"API_AUTH_ENABLED" envDefault:"true"`
 	APIKey        string        `env:"API_KEY" envDefault:""`
+}
+
+// NotifiersConfig is the configuration for the notifiers.
+type NotifiersConfig struct {
+	SlackConfig SlackConfig
+}
+
+// SlackConfig is the configuration for Slack.
+type SlackConfig struct {
+	WebhookURL string `env:"SLACK_WEBHOOK_URL" envDefault:""`
 }
 
 // NewConfig creates a new Config instance.
