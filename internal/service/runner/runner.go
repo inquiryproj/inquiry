@@ -20,7 +20,7 @@ type Runner struct {
 	projectRepository  repository.Project
 	scenarioRepository repository.Scenario
 	runRepository      repository.Run
-	runsProducer       events.Producer
+	runsProducer       events.Producer[uuid.UUID]
 
 	logger *slog.Logger
 }
@@ -30,7 +30,7 @@ func NewService(
 	projectRepository repository.Project,
 	scenarioRepository repository.Scenario,
 	runRepository repository.Run,
-	runsProducer events.Producer,
+	runsProducer events.Producer[uuid.UUID],
 	opts ...serviceOptions.Opts,
 ) *Runner {
 	options := serviceOptions.DefaultOptions()

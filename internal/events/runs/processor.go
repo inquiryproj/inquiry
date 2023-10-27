@@ -24,7 +24,7 @@ type Processor interface {
 }
 
 type processor struct {
-	completionsProducer events.Producer
+	completionsProducer events.Producer[uuid.UUID]
 
 	scenarioRepository repository.Scenario
 	runRepository      repository.Run
@@ -33,7 +33,7 @@ type processor struct {
 }
 
 // NewProcessor creates a new run processor.
-func NewProcessor(completionsProducer events.Producer, scenarioRepository repository.Scenario, runRepository repository.Run) Processor {
+func NewProcessor(completionsProducer events.Producer[uuid.UUID], scenarioRepository repository.Scenario, runRepository repository.Run) Processor {
 	return &processor{
 		completionsProducer: completionsProducer,
 

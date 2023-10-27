@@ -2,12 +2,10 @@ package events
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 // Producer produces messages to the queue.
-type Producer interface {
+type Producer[T any] interface {
 	// Produce produces a message to the queue.
-	Produce(ctx context.Context, runID uuid.UUID) error
+	Produce(ctx context.Context, runID T) error
 }

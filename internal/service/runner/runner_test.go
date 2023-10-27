@@ -18,7 +18,7 @@ type mockWrapper struct {
 	scenarioRepositoryMock *repositoryMocks.Scenario
 	projectRepositoryMock  *repositoryMocks.Project
 	runRepositoryMock      *repositoryMocks.Run
-	runProducerMock        *eventMocks.Producer
+	runProducerMock        *eventMocks.Producer[uuid.UUID]
 }
 
 func newMockWrapper(t *testing.T) *mockWrapper {
@@ -26,7 +26,7 @@ func newMockWrapper(t *testing.T) *mockWrapper {
 		scenarioRepositoryMock: repositoryMocks.NewScenario(t),
 		projectRepositoryMock:  repositoryMocks.NewProject(t),
 		runRepositoryMock:      repositoryMocks.NewRun(t),
-		runProducerMock:        eventMocks.NewProducer(t),
+		runProducerMock:        eventMocks.NewProducer[uuid.UUID](t),
 	}
 }
 
