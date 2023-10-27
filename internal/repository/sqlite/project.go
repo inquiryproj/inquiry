@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
@@ -20,6 +21,22 @@ type Project struct {
 // ProjectRepository is the sqlite repository for projects.
 type ProjectRepository struct {
 	conn *gorm.DB
+}
+
+// GetByID returns a project from sqlite by id.
+func (r *ProjectRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Project, error) {
+	project := &Project{}
+
+	err := r.conn.WithContext(ctx).Model(&Project{}).Where("id = ?", id).First(project).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("%w %w", domain.ErrProjectNotFound, err)
+	} else if err != nil {
+		return nil, err
+	}
+	return &domain.Project{
+		ID:   project.ID,
+		Name: project.Name,
+	}, nil
 }
 
 // GetByName returns a project from sqlite by name.

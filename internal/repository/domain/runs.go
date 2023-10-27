@@ -26,6 +26,7 @@ type Run struct {
 	State              RunState
 	ErrorMessage       string
 	ScenarioRunDetails []*ScenarioRunDetails
+	CreatedAt          time.Time
 }
 
 // ScenarioRunDetails is the domain model for scenario run details.

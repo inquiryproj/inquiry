@@ -79,10 +79,7 @@ func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.
 	if err != nil {
 		return nil, err
 	}
-	return &domain.Run{
-		ID:        run.ID,
-		ProjectID: run.ProjectID,
-	}, nil
+	return runToDomainRun(run)
 }
 
 // UpdateRun updates a run in sqlite.
@@ -186,6 +183,7 @@ func runToDomainRun(run *Run) (*domain.Run, error) {
 		State:              domain.RunState(run.State),
 		ErrorMessage:       run.ErrorMessage,
 		ScenarioRunDetails: scenarioRunDetails,
+		CreatedAt:          run.CreatedAt,
 	}, nil
 }
 
