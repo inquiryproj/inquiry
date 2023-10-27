@@ -9,7 +9,6 @@ import (
 
 	"github.com/inquiryproj/inquiry/internal/events"
 	"github.com/inquiryproj/inquiry/internal/events/runs"
-	"github.com/inquiryproj/inquiry/internal/events/runs/run"
 	"github.com/inquiryproj/inquiry/internal/http"
 	"github.com/inquiryproj/inquiry/internal/http/handlers"
 	"github.com/inquiryproj/inquiry/internal/repository"
@@ -123,8 +122,8 @@ func (r *runnableConsumer) Name() string {
 	return r.name
 }
 
-func processorFactory(repositoryWrapper *repository.Wrapper) run.Processor {
-	return run.NewProcessor(repositoryWrapper.Scenario, repositoryWrapper.Run)
+func processorFactory(repositoryWrapper *repository.Wrapper) runs.Processor {
+	return runs.NewProcessor(repositoryWrapper.Scenario, repositoryWrapper.Run)
 }
 
 func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer events.Producer[uuid.UUID]) service.Wrapper {

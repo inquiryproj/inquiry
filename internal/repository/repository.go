@@ -22,6 +22,7 @@ type Wrapper struct {
 
 // Project is the project repository.
 type Project interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Project, error)
 	GetByName(ctx context.Context, name string) (*domain.Project, error)
 	GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error)
 	CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error)
