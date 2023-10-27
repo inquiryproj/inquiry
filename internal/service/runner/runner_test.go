@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/inquiryproj/inquiry/internal/app"
-	eventMocks "github.com/inquiryproj/inquiry/internal/events/runs/mocks"
+	eventMocks "github.com/inquiryproj/inquiry/internal/events/mocks"
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
 	repositoryMocks "github.com/inquiryproj/inquiry/internal/repository/mocks"
 )
