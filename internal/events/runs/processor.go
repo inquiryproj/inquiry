@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/inquiryproj/inquiry/internal/events"
 	"github.com/inquiryproj/inquiry/internal/executor"
 	"github.com/inquiryproj/inquiry/internal/executor/http"
 	"github.com/inquiryproj/inquiry/internal/repository"
@@ -23,6 +24,8 @@ type Processor interface {
 }
 
 type processor struct {
+	completionsProducer events.Producer
+
 	scenarioRepository repository.Scenario
 	runRepository      repository.Run
 
@@ -30,8 +33,10 @@ type processor struct {
 }
 
 // NewProcessor creates a new run processor.
-func NewProcessor(scenarioRepository repository.Scenario, runRepository repository.Run) Processor {
+func NewProcessor(completionsProducer events.Producer, scenarioRepository repository.Scenario, runRepository repository.Run) Processor {
 	return &processor{
+		completionsProducer: completionsProducer,
+
 		scenarioRepository: scenarioRepository,
 		runRepository:      runRepository,
 
@@ -41,7 +46,8 @@ func NewProcessor(scenarioRepository repository.Scenario, runRepository reposito
 
 // Process processes a run for a given project ID.
 func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
-	run, err := p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
+	ctx := context.Background()
+	run, err := p.runRepository.UpdateRun(ctx, &domain.UpdateRunRequest{
 		ID:    runID,
 		State: domain.RunStateRunning,
 	})
@@ -51,9 +57,9 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 
 	p.logger.Info("processing project", slog.String("project_id", run.ProjectID.String()))
 
-	scenarioResults, err := p.processProject(run.ProjectID)
+	scenarioResults, err := p.processProject(ctx, run.ProjectID)
 	if err != nil {
-		_, updateErr := p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
+		_, updateErr := p.runRepository.UpdateRun(ctx, &domain.UpdateRunRequest{
 			ID:           runID,
 			State:        domain.RunStateFailure,
 			ErrorMessage: err.Error(),
@@ -65,12 +71,17 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 	}
 	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()))
 
-	_, err = p.runRepository.UpdateRun(context.Background(), &domain.UpdateRunRequest{
+	_, err = p.runRepository.UpdateRun(ctx, &domain.UpdateRunRequest{
 		ID:                 runID,
 		State:              domain.RunStateSuccess,
 		Success:            true,
 		ScenarioRunDetails: executeResultsToScenarioRunDetails(scenarioResults),
 	})
+	if err != nil {
+		return runID, err
+	}
+
+	err = p.completionsProducer.Produce(ctx, runID)
 
 	return runID, err
 }
@@ -113,8 +124,8 @@ func executeStepResultToStepRunDetails(executeStepResult *http.ExecuteStepResult
 	}
 }
 
-func (p *processor) processProject(projectID uuid.UUID) ([]*http.ExecuteResult, error) {
-	scenarios, err := p.scenarioRepository.GetForProject(context.Background(), &domain.GetScenariosForProjectRequest{
+func (p *processor) processProject(ctx context.Context, projectID uuid.UUID) ([]*http.ExecuteResult, error) {
+	scenarios, err := p.scenarioRepository.GetForProject(ctx, &domain.GetScenariosForProjectRequest{
 		ProjectID: projectID,
 	})
 	if err != nil {

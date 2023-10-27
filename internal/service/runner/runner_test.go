@@ -177,7 +177,7 @@ func TestRunProject(t *testing.T) {
 						State:     domain.RunStatePending,
 						Success:   false,
 					}, nil)
-				wrapper.runProducerMock.On("Produce", runID).Return(nil)
+				wrapper.runProducerMock.On("Produce", mock.Anything, runID).Return(nil)
 			},
 			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
 				assert.NoError(t, err)
@@ -201,7 +201,7 @@ func TestRunProject(t *testing.T) {
 						State:     domain.RunStatePending,
 						Success:   false,
 					}, nil)
-				wrapper.runProducerMock.On("Produce", runID).Return(assert.AnError)
+				wrapper.runProducerMock.On("Produce", mock.Anything, runID).Return(assert.AnError)
 			},
 			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
 				assert.Error(t, err)
@@ -266,7 +266,7 @@ func TestRunProjectByName(t *testing.T) {
 						State:     domain.RunStatePending,
 						Success:   false,
 					}, nil)
-				wrapper.runProducerMock.On("Produce", runID).Return(nil)
+				wrapper.runProducerMock.On("Produce", mock.Anything, runID).Return(nil)
 			},
 			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
 				assert.NoError(t, err)
@@ -296,7 +296,7 @@ func TestRunProjectByName(t *testing.T) {
 						State:     domain.RunStatePending,
 						Success:   false,
 					}, nil)
-				wrapper.runProducerMock.On("Produce", runID).Return(assert.AnError)
+				wrapper.runProducerMock.On("Produce", mock.Anything, runID).Return(assert.AnError)
 			},
 			validateOutput: func(t *testing.T, res *app.ProjectRunOutput, err error) {
 				assert.Error(t, err)

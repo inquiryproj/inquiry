@@ -5,12 +5,12 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/google/uuid"
-
 	"github.com/inquiryproj/inquiry/internal/events"
+	"github.com/inquiryproj/inquiry/internal/events/completions"
 	"github.com/inquiryproj/inquiry/internal/events/runs"
 	"github.com/inquiryproj/inquiry/internal/http"
 	"github.com/inquiryproj/inquiry/internal/http/handlers"
+	"github.com/inquiryproj/inquiry/internal/notifiers"
 	"github.com/inquiryproj/inquiry/internal/repository"
 	"github.com/inquiryproj/inquiry/internal/service"
 )
@@ -28,13 +28,21 @@ func NewApp() (App, error) {
 	}
 	logger := loggerFactory(cfg.LogLevel, cfg.LogFormat)
 
+	notifierServices := notifiersFactory(cfg.NotifiersConfig)
+
 	repositoryWrapper, err := repositoryFactory(cfg.RepositoryConfig, cfg.ServerConfig.APIKey)
 	if err != nil {
 		logger.Error("failed to initialise repository", slog.String("error", err.Error()))
 		return nil, err
 	}
 
-	runsProducer, runsConsumer, err := runEventsFactory(repositoryWrapper)
+	completionsProducer, completionsConsumer, err := completionEventsFactory(notifierServices, repositoryWrapper)
+	if err != nil {
+		logger.Error("failed to initialise runs events", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	runsProducer, runsConsumer, err := runEventsFactory(completionsProducer, repositoryWrapper)
 	if err != nil {
 		logger.Error("failed to initialise runs events", slog.String("error", err.Error()))
 		return nil, err
@@ -51,6 +59,7 @@ func NewApp() (App, error) {
 		http.WithPort(cfg.ServerConfig.Port),
 		http.WithShutdownDelay(cfg.ServerConfig.ShutdownDelay),
 		http.WithRunnable(runsConsumer),
+		http.WithRunnable(completionsConsumer),
 	}
 	if cfg.ServerConfig.AuthEnabled {
 		opts = append(opts, http.WithAuthEnabled(repositoryWrapper.APIKey))
@@ -93,8 +102,25 @@ func leveler(logLevel LogLevel) slog.Leveler {
 	}
 }
 
-func runEventsFactory(repositoryWrapper *repository.Wrapper) (events.Producer[uuid.UUID], http.Runnable, error) {
-	runProcessor := processorFactory(repositoryWrapper)
+func notifiersFactory(notifiersConfig NotifiersConfig) []notifiers.Notifier {
+	notifierOpts := []notifiers.Opts{}
+	if notifiersConfig.SlackConfig.WebhookURL != "" {
+		notifierOpts = append(notifierOpts, notifiers.WithSlackEnabled(notifiersConfig.SlackConfig.WebhookURL))
+	}
+	return notifiers.NewNotifiers(notifierOpts...)
+}
+
+func completionEventsFactory(notifierServices []notifiers.Notifier, repositoryWrapper *repository.Wrapper) (events.Producer, http.Runnable, error) {
+	completionProcessor := completionProcessorFactory(notifierServices, repositoryWrapper)
+	producer, consumer, err := completions.NewProducerConsumer(completionProcessor)
+	if err != nil {
+		return nil, nil, err
+	}
+	return producer, newRunnableConsumer(consumer, "completion consumer"), nil
+}
+
+func runEventsFactory(completionsProducer events.Producer, repositoryWrapper *repository.Wrapper) (events.Producer, http.Runnable, error) {
+	runProcessor := runProcessorFactory(completionsProducer, repositoryWrapper)
 	producer, consumer, err := runs.NewProducerConsumer(runProcessor)
 	if err != nil {
 		return nil, nil, err
@@ -122,11 +148,15 @@ func (r *runnableConsumer) Name() string {
 	return r.name
 }
 
-func processorFactory(repositoryWrapper *repository.Wrapper) runs.Processor {
-	return runs.NewProcessor(repositoryWrapper.Scenario, repositoryWrapper.Run)
+func completionProcessorFactory(notifierServices []notifiers.Notifier, repositoryWrapper *repository.Wrapper) runs.Processor {
+	return completions.NewProcessor(notifierServices, repositoryWrapper.Run, repositoryWrapper.Project)
 }
 
-func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer events.Producer[uuid.UUID]) service.Wrapper {
+func runProcessorFactory(completionsProducer events.Producer, repositoryWrapper *repository.Wrapper) runs.Processor {
+	return runs.NewProcessor(completionsProducer, repositoryWrapper.Scenario, repositoryWrapper.Run)
+}
+
+func serviceFactory(repositoryWrapper *repository.Wrapper, runsProducer events.Producer) service.Wrapper {
 	return service.NewServiceWrapper(repositoryWrapper, runsProducer)
 }
 

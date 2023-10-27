@@ -20,7 +20,7 @@ type Runner struct {
 	projectRepository  repository.Project
 	scenarioRepository repository.Scenario
 	runRepository      repository.Run
-	runsProducer       events.Producer[uuid.UUID]
+	runsProducer       events.Producer
 
 	logger *slog.Logger
 }
@@ -30,7 +30,7 @@ func NewService(
 	projectRepository repository.Project,
 	scenarioRepository repository.Scenario,
 	runRepository repository.Run,
-	runsProducer events.Producer[uuid.UUID],
+	runsProducer events.Producer,
 	opts ...serviceOptions.Opts,
 ) *Runner {
 	options := serviceOptions.DefaultOptions()
@@ -72,7 +72,7 @@ func (s *Runner) runProjectForID(ctx context.Context, projectID uuid.UUID) (*app
 		s.logger.Error("failed to create run", slog.String("error", err.Error()))
 		return nil, err
 	}
-	err = s.runsProducer.Produce(run.ID)
+	err = s.runsProducer.Produce(ctx, run.ID)
 	if err != nil {
 		s.logger.Error("failed to produce run for project", slog.String("error", err.Error()))
 		return nil, err
