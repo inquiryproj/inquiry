@@ -30,6 +30,13 @@ func defaultOptions() *Options {
 // Opts represents a function that modifies the options.
 type Opts func(*Options)
 
+// WithConsumerType sets the consumer type.
+func WithConsumerType(consumerType ConsumerType) Opts {
+	return func(options *Options) {
+		options.ConsumerType = consumerType
+	}
+}
+
 // NewProducerConsumer creates a new producer and consumer.
 func NewProducerConsumer(completionsProcessor Processor, opts ...Opts) (events.Producer[uuid.UUID], events.Consumer, error) {
 	options := defaultOptions()
