@@ -52,7 +52,7 @@ func TestGetRunsForProject(t *testing.T) {
 						{
 							ID:        runID,
 							ProjectID: projectID,
-							State:     domain.RunStateSuccess,
+							State:     domain.RunStateCompleted,
 							Success:   false,
 							ScenarioRunDetails: []*domain.ScenarioRunDetails{
 								testScenarioDetails(),
@@ -66,7 +66,7 @@ func TestGetRunsForProject(t *testing.T) {
 				assert.Equal(t, 1, len(res.Runs))
 				assert.Equal(t, runID, res.Runs[0].ID)
 				assert.Equal(t, projectID, res.Runs[0].ProjectID)
-				assert.Equal(t, app.RunStateSuccess, res.Runs[0].State)
+				assert.Equal(t, app.RunStateCompleted, res.Runs[0].State)
 				assert.Equal(t, false, res.Runs[0].Success)
 				assert.Equal(t, 1, len(res.Runs[0].ScenarioRunDetails))
 				assert.Equal(t, "scenario 1", res.Runs[0].ScenarioRunDetails[0].Name)
@@ -109,7 +109,7 @@ func TestGetRunsForProject(t *testing.T) {
 						{
 							ID:        runID,
 							ProjectID: projectID,
-							State:     domain.RunStateSuccess,
+							State:     domain.RunStateCompleted,
 							Success:   false,
 						},
 					}, nil)

@@ -13,7 +13,7 @@ type RunState string
 const (
 	RunStatePending   RunState = "pending"
 	RunStateRunning   RunState = "running"
-	RunStateSuccess   RunState = "success"
+	RunStateCompleted RunState = "completed"
 	RunStateFailure   RunState = "failure"
 	RunstateCancelled RunState = "cancelled"
 )
