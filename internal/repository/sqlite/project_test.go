@@ -40,7 +40,7 @@ func (s *SQLiteIntegrationSuite) TestUnableToCreateDuplicateProject() {
 	s.ErrorIs(err, domain.ErrProjectAlreadyExists)
 }
 
-func (s *SQLiteIntegrationSuite) TestGetByIDNotFound() {
+func (s *SQLiteIntegrationSuite) TestGetProjectByIDNotFound() {
 	_, err := s.repository.ProjectRepository.GetByID(context.Background(), uuid.New())
 
 	s.Error(err)
