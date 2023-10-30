@@ -49,6 +49,12 @@ type ProjectRunOutputState string
 // ProjectRunOutputArray defines model for ProjectRunOutputArray.
 type ProjectRunOutputArray = []ProjectRunOutput
 
+// ProjectRunRequest defines model for ProjectRunRequest.
+type ProjectRunRequest struct {
+	ProjectID   *uuid.UUID `json:"project_id,omitempty"`
+	ProjectName *string    `json:"project_name,omitempty"`
+}
+
 // Scenario defines model for Scenario.
 type Scenario struct {
 	ID        uuid.UUID `json:"id"`
@@ -94,8 +100,8 @@ type ListProjectsParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetRunsForProjectParams defines parameters for GetRunsForProject.
-type GetRunsForProjectParams struct {
+// ListRunsForProjectParams defines parameters for ListRunsForProject.
+type ListRunsForProjectParams struct {
 	// Limit The number of runs to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -105,6 +111,9 @@ type GetRunsForProjectParams struct {
 
 // CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
 type CreateProjectJSONRequestBody = Project
+
+// RunProjectJSONRequestBody defines body for RunProject for application/json ContentType.
+type RunProjectJSONRequestBody = ProjectRunRequest
 
 // CreateScenarioJSONRequestBody defines body for CreateScenario for application/json ContentType.
 type CreateScenarioJSONRequestBody = ScenarioCreateRequest

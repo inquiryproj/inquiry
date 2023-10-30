@@ -43,20 +43,6 @@ func (_m *ServerInterface) CreateScenario(ctx echo.Context, id uuid.UUID) error 
 	return r0
 }
 
-// GetRunsForProject provides a mock function with given fields: ctx, id, params
-func (_m *ServerInterface) GetRunsForProject(ctx echo.Context, id uuid.UUID, params api.GetRunsForProjectParams) error {
-	ret := _m.Called(ctx, id, params)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(echo.Context, uuid.UUID, api.GetRunsForProjectParams) error); ok {
-		r0 = rf(ctx, id, params)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // ListProjects provides a mock function with given fields: ctx, params
 func (_m *ServerInterface) ListProjects(ctx echo.Context, params api.ListProjectsParams) error {
 	ret := _m.Called(ctx, params)
@@ -71,13 +57,13 @@ func (_m *ServerInterface) ListProjects(ctx echo.Context, params api.ListProject
 	return r0
 }
 
-// RunProject provides a mock function with given fields: ctx, id
-func (_m *ServerInterface) RunProject(ctx echo.Context, id uuid.UUID) error {
-	ret := _m.Called(ctx, id)
+// ListRunsForProject provides a mock function with given fields: ctx, id, params
+func (_m *ServerInterface) ListRunsForProject(ctx echo.Context, id uuid.UUID, params api.ListRunsForProjectParams) error {
+	ret := _m.Called(ctx, id, params)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(echo.Context, uuid.UUID) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(echo.Context, uuid.UUID, api.ListRunsForProjectParams) error); ok {
+		r0 = rf(ctx, id, params)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -85,13 +71,13 @@ func (_m *ServerInterface) RunProject(ctx echo.Context, id uuid.UUID) error {
 	return r0
 }
 
-// RunProjectByName provides a mock function with given fields: ctx, name
-func (_m *ServerInterface) RunProjectByName(ctx echo.Context, name string) error {
-	ret := _m.Called(ctx, name)
+// RunProject provides a mock function with given fields: ctx
+func (_m *ServerInterface) RunProject(ctx echo.Context) error {
+	ret := _m.Called(ctx)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(echo.Context, string) error); ok {
-		r0 = rf(ctx, name)
+	if rf, ok := ret.Get(0).(func(echo.Context) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}

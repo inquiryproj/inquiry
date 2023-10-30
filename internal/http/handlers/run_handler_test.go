@@ -19,7 +19,7 @@ import (
 func TestRunProject(t *testing.T) {
 	projectID := uuid.New()
 	runID := uuid.New()
-
+	projectName := "default"
 	tests := []struct {
 		name          string
 		setupMocks    func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner)
@@ -27,9 +27,11 @@ func TestRunProject(t *testing.T) {
 		errStatusCode int
 	}{
 		{
-			name: "success",
+			name: "success by project id",
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
-				echoMockContext.On("Request").Return(&http.Request{})
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.RunProjectJSONRequestBody{
+					ProjectID: &projectID,
+				}))
 				echoMockContext.On("JSON", http.StatusOK, mock.Anything).Run(func(args mock.Arguments) {
 					assert.Equal(t, api.ProjectRunOutput{
 						ID:        runID,
@@ -49,9 +51,11 @@ func TestRunProject(t *testing.T) {
 			},
 		},
 		{
-			name: "unable to run project",
+			name: "unable to run project by id",
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
-				echoMockContext.On("Request").Return(&http.Request{})
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.RunProjectJSONRequestBody{
+					ProjectID: &projectID,
+				}))
 				runnerServiceMock.On("RunProject", mock.Anything, &app.RunProjectRequest{
 					ProjectID: projectID,
 				}).Return(nil, assert.AnError)
@@ -59,43 +63,12 @@ func TestRunProject(t *testing.T) {
 			expectErr:     true,
 			errStatusCode: http.StatusInternalServerError,
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			echoMockContext := httpMocks.NewContext(t)
-			runnerServiceMock := serviceMocks.NewRunner(t)
-
-			tt.setupMocks(echoMockContext, runnerServiceMock)
-
-			runHandler := newRunHandler(runnerServiceMock)
-			err := runHandler.RunProject(echoMockContext, projectID)
-			if tt.expectErr {
-				assert.Error(t, err)
-				httpError := &echo.HTTPError{}
-				assert.ErrorAs(t, err, &httpError)
-				assert.Equal(t, tt.errStatusCode, httpError.Code)
-				return
-			}
-			assert.NoError(t, err)
-		})
-	}
-}
-
-func TestRunProjectByName(t *testing.T) {
-	projectID := uuid.New()
-	runID := uuid.New()
-
-	tests := []struct {
-		name          string
-		setupMocks    func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner)
-		expectErr     bool
-		errStatusCode int
-	}{
 		{
 			name: "success",
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
-				echoMockContext.On("Request").Return(&http.Request{})
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.RunProjectJSONRequestBody{
+					ProjectName: &projectName,
+				}))
 				echoMockContext.On("JSON", http.StatusOK, mock.Anything).Run(func(args mock.Arguments) {
 					assert.Equal(t, api.ProjectRunOutput{
 						ID:        runID,
@@ -115,15 +88,25 @@ func TestRunProjectByName(t *testing.T) {
 			},
 		},
 		{
-			name: "unable to run project",
+			name: "unable to run project by name",
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
-				echoMockContext.On("Request").Return(&http.Request{})
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.RunProjectJSONRequestBody{
+					ProjectName: &projectName,
+				}))
 				runnerServiceMock.On("RunProjectByName", mock.Anything, &app.RunProjectByNameRequest{
 					ProjectName: "default",
 				}).Return(nil, assert.AnError)
 			},
 			expectErr:     true,
 			errStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "incorrect payload",
+			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
+				echoMockContext.On("Request").Return(httpRequestForStruct(t, api.RunProjectJSONRequestBody{}))
+			},
+			expectErr:     true,
+			errStatusCode: http.StatusBadRequest,
 		},
 	}
 
@@ -135,7 +118,7 @@ func TestRunProjectByName(t *testing.T) {
 			tt.setupMocks(echoMockContext, runnerServiceMock)
 
 			runHandler := newRunHandler(runnerServiceMock)
-			err := runHandler.RunProjectByName(echoMockContext, "default")
+			err := runHandler.RunProject(echoMockContext)
 			if tt.expectErr {
 				assert.Error(t, err)
 				httpError := &echo.HTTPError{}
@@ -148,16 +131,16 @@ func TestRunProjectByName(t *testing.T) {
 	}
 }
 
-func TestGetRunsForProject(t *testing.T) {
+func TestListRunsForProject(t *testing.T) {
 	projectID := uuid.New()
 	runID := uuid.New()
 
 	tests := []struct {
-		name                    string
-		getRunsForProjectParams api.GetRunsForProjectParams
-		setupMocks              func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner)
-		expectErr               bool
-		errStatusCode           int
+		name                     string
+		ListRunsForProjectParams api.ListRunsForProjectParams
+		setupMocks               func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner)
+		expectErr                bool
+		errStatusCode            int
 	}{
 		{
 			name: "success",
@@ -215,7 +198,7 @@ func TestGetRunsForProject(t *testing.T) {
 			},
 			expectErr:     true,
 			errStatusCode: http.StatusInternalServerError,
-			getRunsForProjectParams: api.GetRunsForProjectParams{
+			ListRunsForProjectParams: api.ListRunsForProjectParams{
 				Limit:  newInt(50),
 				Offset: newInt(10),
 			},
@@ -230,7 +213,7 @@ func TestGetRunsForProject(t *testing.T) {
 			tt.setupMocks(echoMockContext, runnerServiceMock)
 
 			runHandler := newRunHandler(runnerServiceMock)
-			err := runHandler.GetRunsForProject(echoMockContext, projectID, tt.getRunsForProjectParams)
+			err := runHandler.ListRunsForProject(echoMockContext, projectID, tt.ListRunsForProjectParams)
 			if tt.expectErr {
 				assert.Error(t, err)
 				httpError := &echo.HTTPError{}
