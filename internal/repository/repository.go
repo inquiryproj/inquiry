@@ -24,21 +24,21 @@ type Wrapper struct {
 type Project interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.Project, error)
 	GetByName(ctx context.Context, name string) (*domain.Project, error)
-	GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error)
-	CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error)
+	List(ctx context.Context, getProjectsRequest *domain.ListProjectsRequest) ([]*domain.Project, error)
+	Create(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error)
 }
 
 // Run is the run repository.
 type Run interface {
-	GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error)
-	CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error)
-	UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error)
+	Get(ctx context.Context, id uuid.UUID) (*domain.Run, error)
+	Create(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error)
+	Update(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error)
 	ListForProject(ctx context.Context, listForProject *domain.ListRunsForProjectRequest) ([]*domain.Run, error)
 }
 
 // Scenario is the scenario repository.
 type Scenario interface {
-	CreateScenario(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error)
+	Create(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error)
 	GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error)
 }
 

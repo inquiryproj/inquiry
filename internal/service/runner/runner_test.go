@@ -167,7 +167,7 @@ func TestRunProject(t *testing.T) {
 		{
 			name: "success",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+				wrapper.runRepositoryMock.On("Create", mock.Anything,
 					&domain.CreateRunRequest{
 						ProjectID: projectID,
 					}).
@@ -191,7 +191,7 @@ func TestRunProject(t *testing.T) {
 		{
 			name: "unable to produce",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+				wrapper.runRepositoryMock.On("Create", mock.Anything,
 					&domain.CreateRunRequest{
 						ProjectID: projectID,
 					}).
@@ -210,7 +210,7 @@ func TestRunProject(t *testing.T) {
 		{
 			name: "unable to create run",
 			setupMocks: func(wrapper *mockWrapper) {
-				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+				wrapper.runRepositoryMock.On("Create", mock.Anything,
 					&domain.CreateRunRequest{
 						ProjectID: projectID,
 					}).
@@ -256,7 +256,7 @@ func TestRunProjectByName(t *testing.T) {
 						Name: "default",
 					}, nil)
 
-				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+				wrapper.runRepositoryMock.On("Create", mock.Anything,
 					&domain.CreateRunRequest{
 						ProjectID: projectID,
 					}).
@@ -286,7 +286,7 @@ func TestRunProjectByName(t *testing.T) {
 						Name: "default",
 					}, nil)
 
-				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+				wrapper.runRepositoryMock.On("Create", mock.Anything,
 					&domain.CreateRunRequest{
 						ProjectID: projectID,
 					}).
@@ -311,7 +311,7 @@ func TestRunProjectByName(t *testing.T) {
 						Name: "default",
 					}, nil)
 
-				wrapper.runRepositoryMock.On("CreateRun", mock.Anything,
+				wrapper.runRepositoryMock.On("Create", mock.Anything,
 					&domain.CreateRunRequest{
 						ProjectID: projectID,
 					}).

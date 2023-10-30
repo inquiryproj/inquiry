@@ -16,8 +16,8 @@ type Project struct {
 	mock.Mock
 }
 
-// CreateProject provides a mock function with given fields: ctx, project
-func (_m *Project) CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error) {
+// Create provides a mock function with given fields: ctx, project
+func (_m *Project) Create(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error) {
 	ret := _m.Called(ctx, project)
 
 	var r0 *domain.Project
@@ -94,16 +94,16 @@ func (_m *Project) GetByName(ctx context.Context, name string) (*domain.Project,
 	return r0, r1
 }
 
-// GetProjects provides a mock function with given fields: ctx, getProjectsRequest
-func (_m *Project) GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error) {
+// List provides a mock function with given fields: ctx, getProjectsRequest
+func (_m *Project) List(ctx context.Context, getProjectsRequest *domain.ListProjectsRequest) ([]*domain.Project, error) {
 	ret := _m.Called(ctx, getProjectsRequest)
 
 	var r0 []*domain.Project
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.GetProjectsRequest) ([]*domain.Project, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.ListProjectsRequest) ([]*domain.Project, error)); ok {
 		return rf(ctx, getProjectsRequest)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.GetProjectsRequest) []*domain.Project); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.ListProjectsRequest) []*domain.Project); ok {
 		r0 = rf(ctx, getProjectsRequest)
 	} else {
 		if ret.Get(0) != nil {
@@ -111,7 +111,7 @@ func (_m *Project) GetProjects(ctx context.Context, getProjectsRequest *domain.G
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.GetProjectsRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.ListProjectsRequest) error); ok {
 		r1 = rf(ctx, getProjectsRequest)
 	} else {
 		r1 = ret.Error(1)

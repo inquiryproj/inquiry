@@ -25,8 +25,8 @@ type ScenarioRepository struct {
 	conn *gorm.DB
 }
 
-// CreateScenario creates a new scenario in sqlite.
-func (r *ScenarioRepository) CreateScenario(ctx context.Context, createScenarioRequest *domain.CreateScenarioRequest) (*domain.Scenario, error) {
+// Create creates a new scenario in sqlite.
+func (r *ScenarioRepository) Create(ctx context.Context, createScenarioRequest *domain.CreateScenarioRequest) (*domain.Scenario, error) {
 	sqliteScenario := &Scenario{
 		Name:      createScenarioRequest.Name,
 		SpecType:  string(createScenarioRequest.SpecType),

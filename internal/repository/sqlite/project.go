@@ -55,8 +55,8 @@ func (r *ProjectRepository) GetByName(ctx context.Context, name string) (*domain
 	}, nil
 }
 
-// GetProjects returns all projects from sqlite.
-func (r *ProjectRepository) GetProjects(ctx context.Context, getProjectsRequest *domain.GetProjectsRequest) ([]*domain.Project, error) {
+// List returns all projects from sqlite.
+func (r *ProjectRepository) List(ctx context.Context, getProjectsRequest *domain.ListProjectsRequest) ([]*domain.Project, error) {
 	projects := []*Project{}
 	err := r.conn.
 		WithContext(ctx).
@@ -81,8 +81,8 @@ func toAppProjects(projects []*Project) []*domain.Project {
 	return appProjects
 }
 
-// CreateProject creates a new project in sqlite.
-func (r *ProjectRepository) CreateProject(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error) {
+// Create creates a new project in sqlite.
+func (r *ProjectRepository) Create(ctx context.Context, project *domain.CreateProjectRequest) (*domain.Project, error) {
 	sqliteProject := &Project{
 		Name: project.Name,
 	}

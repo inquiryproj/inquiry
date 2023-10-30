@@ -33,7 +33,7 @@ func NewService(projectRepository repository.Project, opts ...serviceOptions.Opt
 
 // ListProjects returns a list of projects.
 func (s *Project) ListProjects(ctx context.Context, getProjectsRequest *app.ListProjectsRequest) ([]*app.Project, error) {
-	projects, err := s.projectRepository.GetProjects(ctx, &domain.GetProjectsRequest{
+	projects, err := s.projectRepository.List(ctx, &domain.ListProjectsRequest{
 		Limit:  getProjectsRequest.Limit,
 		Offset: getProjectsRequest.Offset,
 	})
@@ -56,7 +56,7 @@ func toAppProjects(projects []*domain.Project) []*app.Project {
 
 // CreateProject creates a new project.
 func (s *Project) CreateProject(ctx context.Context, createProjectRequest *app.CreateProjectRequest) (*app.Project, error) {
-	project, err := s.projectRepository.CreateProject(ctx, &domain.CreateProjectRequest{
+	project, err := s.projectRepository.Create(ctx, &domain.CreateProjectRequest{
 		Name: createProjectRequest.Name,
 	})
 	if errors.Is(err, domain.ErrProjectAlreadyExists) {
