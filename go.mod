@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/caarlos0/env/v9 v9.0.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/oapi-codegen/runtime v1.0.0
 	github.com/orandin/slog-gorm v1.0.0
