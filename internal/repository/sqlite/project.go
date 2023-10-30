@@ -23,6 +23,13 @@ type ProjectRepository struct {
 	conn *gorm.DB
 }
 
+// NewProjectRepository initialises the sqlite project repository.
+func NewProjectRepository(conn *gorm.DB) *ProjectRepository {
+	return &ProjectRepository{
+		conn: conn,
+	}
+}
+
 // GetByID returns a project from sqlite by id.
 func (r *ProjectRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Project, error) {
 	project := &Project{}

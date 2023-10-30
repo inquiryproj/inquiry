@@ -38,10 +38,17 @@ func (s *SQLiteIntegrationSuite) TearDownSuite() {
 }
 
 func TestSQLiteIntegration(t *testing.T) {
-	suite.Run(t, &SQLiteIntegrationSuite{
+	sqliteIntegrationSuite := &SQLiteIntegrationSuite{
 		migrationOpts: &MigrationOptions{
 			APIKey: "foo",
 		},
 		logger: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})),
-	})
+	}
+	// ensure always cleanup integration test db.
+	defer func() {
+		if r := recover(); r != nil {
+			sqliteIntegrationSuite.TearDownSuite()
+		}
+	}()
+	suite.Run(t, sqliteIntegrationSuite)
 }

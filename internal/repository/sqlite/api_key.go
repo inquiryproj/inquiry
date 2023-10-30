@@ -24,6 +24,13 @@ type APIKeyRepository struct {
 	conn *gorm.DB
 }
 
+// NewAPIKeyRepository initialises the sqlite API Key repository.
+func NewAPIKeyRepository(conn *gorm.DB) *APIKeyRepository {
+	return &APIKeyRepository{
+		conn: conn,
+	}
+}
+
 // GetForNameAndUserID returns an API Key for a given name and user id.
 func (r *APIKeyRepository) GetForNameAndUserID(ctx context.Context, getAPIKeyForNameAndUserIDRequest *domain.GetAPIKeyForNameAndUserIDRequest) (*domain.APIKey, error) {
 	apiKey := &APIKey{}
