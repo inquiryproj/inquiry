@@ -13,3 +13,6 @@ var ErrProjectAlreadyExists = fmt.Errorf("project already exists")
 
 // ErrProjectNotFound is returned when a project is not found.
 var ErrProjectNotFound = fmt.Errorf("project not found")
+
+// ErrUserAlreadyExists is returned when a user already exists.
+var ErrUserAlreadyExists = fmt.Errorf("user already exists")
