@@ -14,10 +14,10 @@ const (
 // Defines values for ProjectRunOutputState.
 const (
 	Cancelled ProjectRunOutputState = "cancelled"
+	Completed ProjectRunOutputState = "completed"
 	Failure   ProjectRunOutputState = "failure"
 	Pending   ProjectRunOutputState = "pending"
 	Running   ProjectRunOutputState = "running"
-	Success   ProjectRunOutputState = "success"
 )
 
 // Defines values for ScenarioSpecType.

@@ -152,7 +152,7 @@ func TestListRunsForProject(t *testing.T) {
 							ID:        runID,
 							ProjectID: projectID,
 							Success:   true,
-							State:     api.Success,
+							State:     api.Completed,
 							ScenarioRunDetails: []api.ScenarioRunDetails{
 								{
 									Name:         "Test Scenario 1",
@@ -231,7 +231,7 @@ func dummyProjectRunOutput(projectID, runID uuid.UUID) *app.ProjectRunOutput {
 		ID:        runID,
 		ProjectID: projectID,
 		Success:   true,
-		State:     app.RunStateSuccess,
+		State:     app.RunStateCompleted,
 		ScenarioRunDetails: []*app.ScenarioRunDetails{
 			{
 				Name:       "Test Scenario 1",

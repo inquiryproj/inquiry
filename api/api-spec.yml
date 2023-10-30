@@ -117,7 +117,7 @@ components:
           type: boolean
         state:
           type: string
-          enum: [pending, running, success, failure, cancelled]
+          enum: [pending, running, completed, failure, cancelled]
         scenario_run_details:
           type: array
           items:

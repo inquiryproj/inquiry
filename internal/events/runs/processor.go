@@ -73,7 +73,7 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 
 	_, err = p.runRepository.Update(ctx, &domain.UpdateRunRequest{
 		ID:                 runID,
-		State:              domain.RunStateSuccess,
+		State:              domain.RunStateCompleted,
 		Success:            true,
 		ScenarioRunDetails: executeResultsToScenarioRunDetails(scenarioResults),
 	})
