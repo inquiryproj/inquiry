@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
 )
 
@@ -41,5 +42,4 @@ func (s *SQLiteIntegrationSuite) TestGetScenariosForProject() {
 
 	s.Equal(1, len(scenarios))
 	s.Equal(scenario.ID, scenarios[0].ID)
-
 }
