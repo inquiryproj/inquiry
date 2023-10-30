@@ -58,6 +58,13 @@ type RunRepository struct {
 	conn *gorm.DB
 }
 
+// NewRunRepository initialises the sqlite run repository.
+func NewRunRepository(conn *gorm.DB) *RunRepository {
+	return &RunRepository{
+		conn: conn,
+	}
+}
+
 // Get returns a run from sqlite for a given id.
 func (r *RunRepository) Get(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
 	run := Run{}

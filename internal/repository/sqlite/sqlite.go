@@ -36,6 +36,7 @@ type Repository struct {
 	ScenarioRepository *ScenarioRepository
 	RunRepository      *RunRepository
 	APIKeyRepository   *APIKeyRepository
+	UserRepository     *UserRepository
 }
 
 // NewRepository initialises the sqlite repository.
@@ -55,18 +56,11 @@ func NewRepository(dsn string, logger *slog.Logger, options *MigrationOptions) (
 	}
 
 	return &Repository{
-		ProjectRepository: &ProjectRepository{
-			conn: db,
-		},
-		ScenarioRepository: &ScenarioRepository{
-			conn: db,
-		},
-		RunRepository: &RunRepository{
-			conn: db,
-		},
-		APIKeyRepository: &APIKeyRepository{
-			conn: db,
-		},
+		ProjectRepository:  NewProjectRepository(db),
+		ScenarioRepository: NewScenarioRepository(db),
+		RunRepository:      NewRunRepository(db),
+		APIKeyRepository:   NewAPIKeyRepository(db),
+		UserRepository:     NewUserRepository(db),
 	}, nil
 }
 
