@@ -103,6 +103,10 @@ func seedSQLiteDB(logger *slog.Logger, options *MigrationOptions) func(tx *gorm.
 		if err != nil {
 			return err
 		}
+		err = createDefaultProjectIfNotExists(ctx, tx)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 }
@@ -160,6 +164,22 @@ func createDefaultAPIKey(ctx context.Context, tx *gorm.DB, key string, defaultUs
 		Key: key,
 	})
 	return err
+}
+
+func createDefaultProjectIfNotExists(ctx context.Context, tx *gorm.DB) error {
+	projectRepo := &ProjectRepository{
+		conn: tx,
+	}
+	_, err := projectRepo.GetByName(ctx, "default")
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		_, err = projectRepo.CreateProject(ctx, &domain.CreateProjectRequest{
+			Name: "default",
+		})
+		return err
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
 
 //nolint:nakedret,revive
