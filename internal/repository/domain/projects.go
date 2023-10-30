@@ -9,8 +9,8 @@ type Project struct {
 	Name string
 }
 
-// GetProjectsRequest repository model for retrieving projects.
-type GetProjectsRequest struct {
+// ListProjectsRequest repository model for retrieving projects.
+type ListProjectsRequest struct {
 	Limit  int
 	Offset int
 }

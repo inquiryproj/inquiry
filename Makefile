@@ -43,6 +43,15 @@ test:
 	@echo "View report at $(PWD)/reports/coverage.html"
 	@tail -n 1 reports/functioncoverage.out
 
+# Run unit tests + integration tests and generate coverage report
+test-integration:
+	@mkdir -p reports
+	@go test -coverprofile=reports/codecoverage_all.cov --tags=integration ./... -cover -race -p=4
+	@go tool cover -func=reports/codecoverage_all.cov > reports/functioncoverage.out
+	@go tool cover -html=reports/codecoverage_all.cov -o reports/coverage.html
+	@echo "View report at $(PWD)/reports/coverage.html"
+	@tail -n 1 reports/functioncoverage.out
+
 $(GOBIN)/oapi-codegen:
 	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@${oapiCodegenVersion}
 
@@ -67,3 +76,5 @@ $(GOBIN)/mockery:
 mocks: | $(GOBIN)/mockery
 	@go generate --tags=mocks ./...
 	@${MAKE} format
+
+

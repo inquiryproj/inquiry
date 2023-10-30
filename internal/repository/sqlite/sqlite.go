@@ -32,10 +32,10 @@ func (u *BaseModel) BeforeCreate(_ *gorm.DB) (err error) {
 
 // Repository is the sqlite repository.
 type Repository struct {
-	*ProjectRepository
-	*ScenarioRepository
-	*RunRepository
-	*APIKeyRepository
+	ProjectRepository  *ProjectRepository
+	ScenarioRepository *ScenarioRepository
+	RunRepository      *RunRepository
+	APIKeyRepository   *APIKeyRepository
 }
 
 // NewRepository initialises the sqlite repository.
@@ -79,17 +79,23 @@ type MigrationOptions struct {
 // seeds it with initial data.
 func MigrateAndSeed(db *gorm.DB, logger *slog.Logger, options *MigrationOptions) error {
 	err := db.AutoMigrate(
-		&Project{},
-		&Scenario{},
-		&Run{},
-		&User{},
-		&APIKey{},
+		tableList()...,
 	)
 	if err != nil {
 		return err
 	}
 
 	return transactionExecution(db, seedSQLiteDB(logger, options))
+}
+
+func tableList() []any {
+	return []any{
+		&Project{},
+		&Scenario{},
+		&Run{},
+		&User{},
+		&APIKey{},
+	}
 }
 
 func seedSQLiteDB(logger *slog.Logger, options *MigrationOptions) func(tx *gorm.DB) error {
@@ -172,7 +178,7 @@ func createDefaultProjectIfNotExists(ctx context.Context, tx *gorm.DB) error {
 	}
 	_, err := projectRepo.GetByName(ctx, "default")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		_, err = projectRepo.CreateProject(ctx, &domain.CreateProjectRequest{
+		_, err = projectRepo.Create(ctx, &domain.CreateProjectRequest{
 			Name: "default",
 		})
 		return err

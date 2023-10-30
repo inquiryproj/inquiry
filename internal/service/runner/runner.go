@@ -65,7 +65,7 @@ func (s *Runner) RunProjectByName(ctx context.Context, run *app.RunProjectByName
 }
 
 func (s *Runner) runProjectForID(ctx context.Context, projectID uuid.UUID) (*app.ProjectRunOutput, error) {
-	run, err := s.runRepository.CreateRun(ctx, &domain.CreateRunRequest{
+	run, err := s.runRepository.Create(ctx, &domain.CreateRunRequest{
 		ProjectID: projectID,
 	})
 	if err != nil {

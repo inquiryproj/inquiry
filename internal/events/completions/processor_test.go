@@ -40,7 +40,7 @@ func TestProcess(t *testing.T) {
 		{
 			name: "success",
 			setupMocks: func(mockWrapper *mockWrapper) {
-				mockWrapper.runRepositoryMock.On("GetRun", mock.Anything, runID).Return(&domain.Run{
+				mockWrapper.runRepositoryMock.On("Get", mock.Anything, runID).Return(&domain.Run{
 					ProjectID: projectID,
 					Success:   true,
 					ScenarioRunDetails: []*domain.ScenarioRunDetails{
@@ -76,7 +76,7 @@ func TestProcess(t *testing.T) {
 		{
 			name: "unable to send notifier",
 			setupMocks: func(mockWrapper *mockWrapper) {
-				mockWrapper.runRepositoryMock.On("GetRun", mock.Anything, runID).Return(&domain.Run{
+				mockWrapper.runRepositoryMock.On("Get", mock.Anything, runID).Return(&domain.Run{
 					ProjectID: projectID,
 				}, nil)
 
@@ -91,7 +91,7 @@ func TestProcess(t *testing.T) {
 		{
 			name: "unable to get project",
 			setupMocks: func(mockWrapper *mockWrapper) {
-				mockWrapper.runRepositoryMock.On("GetRun", mock.Anything, runID).Return(&domain.Run{
+				mockWrapper.runRepositoryMock.On("Get", mock.Anything, runID).Return(&domain.Run{
 					ProjectID: projectID,
 				}, nil)
 
@@ -102,7 +102,7 @@ func TestProcess(t *testing.T) {
 		{
 			name: "unable to get run",
 			setupMocks: func(mockWrapper *mockWrapper) {
-				mockWrapper.runRepositoryMock.On("GetRun", mock.Anything, runID).Return(nil, assert.AnError)
+				mockWrapper.runRepositoryMock.On("Get", mock.Anything, runID).Return(nil, assert.AnError)
 			},
 			expectErr: true,
 		},

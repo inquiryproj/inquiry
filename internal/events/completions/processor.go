@@ -46,7 +46,7 @@ func NewProcessor(
 // Process processes a run.
 func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 	ctx := context.Background()
-	run, err := p.runRepository.GetRun(ctx, runID)
+	run, err := p.runRepository.Get(ctx, runID)
 	if err != nil {
 		return runID, err
 	}

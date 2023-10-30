@@ -47,7 +47,7 @@ func NewProcessor(completionsProducer events.Producer[uuid.UUID], scenarioReposi
 // Process processes a run for a given project ID.
 func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 	ctx := context.Background()
-	run, err := p.runRepository.UpdateRun(ctx, &domain.UpdateRunRequest{
+	run, err := p.runRepository.Update(ctx, &domain.UpdateRunRequest{
 		ID:    runID,
 		State: domain.RunStateRunning,
 	})
@@ -59,7 +59,7 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 
 	scenarioResults, err := p.processProject(ctx, run.ProjectID)
 	if err != nil {
-		_, updateErr := p.runRepository.UpdateRun(ctx, &domain.UpdateRunRequest{
+		_, updateErr := p.runRepository.Update(ctx, &domain.UpdateRunRequest{
 			ID:           runID,
 			State:        domain.RunStateFailure,
 			ErrorMessage: err.Error(),
@@ -71,7 +71,7 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 	}
 	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()))
 
-	_, err = p.runRepository.UpdateRun(ctx, &domain.UpdateRunRequest{
+	_, err = p.runRepository.Update(ctx, &domain.UpdateRunRequest{
 		ID:                 runID,
 		State:              domain.RunStateSuccess,
 		Success:            true,

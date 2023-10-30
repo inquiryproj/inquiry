@@ -58,8 +58,8 @@ type RunRepository struct {
 	conn *gorm.DB
 }
 
-// GetRun returns a run from sqlite.
-func (r *RunRepository) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
+// Get returns a run from sqlite for a given id.
+func (r *RunRepository) Get(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
 	run := Run{}
 	err := r.conn.WithContext(ctx).Model(&Run{}).Where("id = ?", id).First(&run).Error
 	if err != nil {
@@ -68,8 +68,8 @@ func (r *RunRepository) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, 
 	return runToDomainRun(&run)
 }
 
-// CreateRun creates a new run in sqlite.
-func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
+// Create creates a new run in sqlite.
+func (r *RunRepository) Create(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
 	run := &Run{
 		ProjectID:       createRunRequest.ProjectID,
 		State:           RunStatePending,
@@ -82,8 +82,8 @@ func (r *RunRepository) CreateRun(ctx context.Context, createRunRequest *domain.
 	return runToDomainRun(run)
 }
 
-// UpdateRun updates a run in sqlite.
-func (r *RunRepository) UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error) {
+// Update updates a run in sqlite.
+func (r *RunRepository) Update(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error) {
 	run := Run{}
 	err := r.conn.WithContext(ctx).Model(&Run{}).Where("id = ?", updateRunRequest.ID).First(&run).Error
 	if err != nil {

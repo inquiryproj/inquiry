@@ -15,8 +15,8 @@ type Scenario struct {
 	mock.Mock
 }
 
-// CreateScenario provides a mock function with given fields: ctx, scenario
-func (_m *Scenario) CreateScenario(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error) {
+// Create provides a mock function with given fields: ctx, scenario
+func (_m *Scenario) Create(ctx context.Context, scenario *domain.CreateScenarioRequest) (*domain.Scenario, error) {
 	ret := _m.Called(ctx, scenario)
 
 	var r0 *domain.Scenario

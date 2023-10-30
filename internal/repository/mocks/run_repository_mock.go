@@ -16,8 +16,8 @@ type Run struct {
 	mock.Mock
 }
 
-// CreateRun provides a mock function with given fields: ctx, createRunRequest
-func (_m *Run) CreateRun(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
+// Create provides a mock function with given fields: ctx, createRunRequest
+func (_m *Run) Create(ctx context.Context, createRunRequest *domain.CreateRunRequest) (*domain.Run, error) {
 	ret := _m.Called(ctx, createRunRequest)
 
 	var r0 *domain.Run
@@ -42,8 +42,8 @@ func (_m *Run) CreateRun(ctx context.Context, createRunRequest *domain.CreateRun
 	return r0, r1
 }
 
-// GetRun provides a mock function with given fields: ctx, id
-func (_m *Run) GetRun(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
+// Get provides a mock function with given fields: ctx, id
+func (_m *Run) Get(ctx context.Context, id uuid.UUID) (*domain.Run, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 *domain.Run
@@ -94,8 +94,8 @@ func (_m *Run) ListForProject(ctx context.Context, listForProject *domain.ListRu
 	return r0, r1
 }
 
-// UpdateRun provides a mock function with given fields: ctx, updateRunRequest
-func (_m *Run) UpdateRun(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error) {
+// Update provides a mock function with given fields: ctx, updateRunRequest
+func (_m *Run) Update(ctx context.Context, updateRunRequest *domain.UpdateRunRequest) (*domain.Run, error) {
 	ret := _m.Called(ctx, updateRunRequest)
 
 	var r0 *domain.Run
