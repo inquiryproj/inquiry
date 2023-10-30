@@ -58,7 +58,7 @@ func (h *ScenarioHandler) CreateScenario(ctx echo.Context, id uuid.UUID) error {
 		ID:        scenario.ID,
 		Name:      scenario.Name,
 		Spec:      scenario.Spec,
-		SpecType:  scenario.SpecType.String(),
+		SpecType:  api.ScenarioSpecType(scenario.SpecType.String()),
 		ProjectID: scenario.ProjectID,
 	})
 }

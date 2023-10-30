@@ -20,6 +20,11 @@ const (
 	Success   ProjectRunOutputState = "success"
 )
 
+// Defines values for ScenarioSpecType.
+const (
+	Yaml ScenarioSpecType = "yaml"
+)
+
 // ErrMsg defines model for ErrMsg.
 type ErrMsg struct {
 	Message string `json:"message"`
@@ -57,16 +62,21 @@ type ProjectRunRequest struct {
 
 // Scenario defines model for Scenario.
 type Scenario struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	ProjectID uuid.UUID `json:"project_id"`
-	Spec      string    `json:"spec"`
-	SpecType  string    `json:"spec_type"`
+	ID        uuid.UUID        `json:"id"`
+	Name      string           `json:"name"`
+	ProjectID uuid.UUID        `json:"project_id"`
+	Spec      string           `json:"spec"`
+	SpecType  ScenarioSpecType `json:"spec_type"`
 }
+
+// ScenarioSpecType defines model for Scenario.SpecType.
+type ScenarioSpecType string
 
 // ScenarioCreateRequest defines model for ScenarioCreateRequest.
 type ScenarioCreateRequest struct {
-	Name     string `json:"name"`
+	Name string `json:"name"`
+
+	// Spec A base64 encoded string of the spec
 	Spec     string `json:"spec"`
 	SpecType string `json:"spec_type"`
 }

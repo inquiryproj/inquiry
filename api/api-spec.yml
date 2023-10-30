@@ -57,6 +57,7 @@ components:
           type: string
         spec: 
           type: string
+          description: A base64 encoded string of the spec
     Scenario:
       type: object
       required:
@@ -75,6 +76,7 @@ components:
           type: string
         spec_type: 
           type: string
+          enum: [yaml]
         spec: 
           type: string
         project_id:
