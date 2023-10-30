@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -33,22 +34,25 @@ func newRunHandler(runnerService service.Runner, opts ...Opts) *RunHandler {
 }
 
 // RunProject runs all scenarios for a given project.
-func (h *RunHandler) RunProject(ctx echo.Context, id uuid.UUID) error {
-	projectRunOutput, err := h.runnerService.RunProject(ctx.Request().Context(), &app.RunProjectRequest{
-		ProjectID: id,
-	})
+func (h *RunHandler) RunProject(ctx echo.Context) error {
+	runProjectJSONRequestBody := api.RunProjectJSONRequestBody{}
+	err := json.NewDecoder(ctx.Request().Body).Decode(&runProjectJSONRequestBody)
 	if err != nil {
-		h.logger.Error("failed to run project", slog.String("error", err.Error()))
-		return echo.NewHTTPError(http.StatusInternalServerError, "unable to run project")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid create scenario payload")
 	}
-	return ctx.JSON(http.StatusOK, projectRunOutputToHTTP(projectRunOutput))
-}
-
-// RunProjectByName runs all scenarios for a given project with a given name.
-func (h *RunHandler) RunProjectByName(ctx echo.Context, name string) error {
-	projectRunOutput, err := h.runnerService.RunProjectByName(ctx.Request().Context(), &app.RunProjectByNameRequest{
-		ProjectName: name,
-	})
+	if runProjectJSONRequestBody.ProjectID == nil && runProjectJSONRequestBody.ProjectName == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "either project_id or project_name must be provided")
+	}
+	var projectRunOutput *app.ProjectRunOutput
+	if runProjectJSONRequestBody.ProjectID != nil {
+		projectRunOutput, err = h.runnerService.RunProject(ctx.Request().Context(), &app.RunProjectRequest{
+			ProjectID: *runProjectJSONRequestBody.ProjectID,
+		})
+	} else {
+		projectRunOutput, err = h.runnerService.RunProjectByName(ctx.Request().Context(), &app.RunProjectByNameRequest{
+			ProjectName: *runProjectJSONRequestBody.ProjectName,
+		})
+	}
 	if errors.Is(err, app.ErrProjectNotFound) {
 		return echo.NewHTTPError(http.StatusNotFound, "project not found")
 	} else if err != nil {
@@ -67,8 +71,8 @@ func projectRunOutputToHTTP(projectRunOutput *app.ProjectRunOutput) api.ProjectR
 	}
 }
 
-// GetRunsForProject returns runs for a given project.
-func (h *RunHandler) GetRunsForProject(ctx echo.Context, id uuid.UUID, params api.GetRunsForProjectParams) error {
+// ListRunsForProject returns runs for a given project.
+func (h *RunHandler) ListRunsForProject(ctx echo.Context, id uuid.UUID, params api.ListRunsForProjectParams) error {
 	getRunsForProjectRequest := &app.GetRunsForProjectRequest{
 		Limit:     100,
 		Offset:    0,

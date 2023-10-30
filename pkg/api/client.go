@@ -59,6 +59,12 @@ type ProjectRunOutputState string
 // ProjectRunOutputArray defines model for ProjectRunOutputArray.
 type ProjectRunOutputArray = []ProjectRunOutput
 
+// ProjectRunRequest defines model for ProjectRunRequest.
+type ProjectRunRequest struct {
+	ProjectID   *uuid.UUID `json:"project_id,omitempty"`
+	ProjectName *string    `json:"project_name,omitempty"`
+}
+
 // Scenario defines model for Scenario.
 type Scenario struct {
 	ID        uuid.UUID `json:"id"`
@@ -104,8 +110,8 @@ type ListProjectsParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetRunsForProjectParams defines parameters for GetRunsForProject.
-type GetRunsForProjectParams struct {
+// ListRunsForProjectParams defines parameters for ListRunsForProject.
+type ListRunsForProjectParams struct {
 	// Limit The number of runs to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -115,6 +121,9 @@ type GetRunsForProjectParams struct {
 
 // CreateProjectJSONRequestBody defines body for CreateProject for application/json ContentType.
 type CreateProjectJSONRequestBody = Project
+
+// RunProjectJSONRequestBody defines body for RunProject for application/json ContentType.
+type RunProjectJSONRequestBody = ProjectRunRequest
 
 // CreateScenarioJSONRequestBody defines body for CreateScenario for application/json ContentType.
 type CreateScenarioJSONRequestBody = ScenarioCreateRequest
@@ -200,19 +209,18 @@ type ClientInterface interface {
 
 	CreateProject(ctx context.Context, body CreateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// RunProject request
-	RunProject(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// RunProjectWithBody request with any body
+	RunProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetRunsForProject request
-	GetRunsForProject(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	RunProject(ctx context.Context, body RunProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListRunsForProject request
+	ListRunsForProject(ctx context.Context, id uuid.UUID, params *ListRunsForProjectParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateScenarioWithBody request with any body
 	CreateScenarioWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateScenario(ctx context.Context, id uuid.UUID, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// RunProjectByName request
-	RunProjectByName(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) ListProjects(ctx context.Context, params *ListProjectsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -251,8 +259,8 @@ func (c *Client) CreateProject(ctx context.Context, body CreateProjectJSONReques
 	return c.Client.Do(req)
 }
 
-func (c *Client) RunProject(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRunProjectRequest(c.Server, id)
+func (c *Client) RunProjectWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRunProjectRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -263,8 +271,20 @@ func (c *Client) RunProject(ctx context.Context, id uuid.UUID, reqEditors ...Req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetRunsForProject(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetRunsForProjectRequest(c.Server, id, params)
+func (c *Client) RunProject(ctx context.Context, body RunProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRunProjectRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListRunsForProject(ctx context.Context, id uuid.UUID, params *ListRunsForProjectParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRunsForProjectRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -289,18 +309,6 @@ func (c *Client) CreateScenarioWithBody(ctx context.Context, id uuid.UUID, conte
 
 func (c *Client) CreateScenario(ctx context.Context, id uuid.UUID, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateScenarioRequest(c.Server, id, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) RunProjectByName(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRunProjectByNameRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -416,23 +424,27 @@ func NewCreateProjectRequestWithBody(server string, contentType string, body io.
 	return req, nil
 }
 
-// NewRunProjectRequest generates requests for RunProject
-func NewRunProjectRequest(server string, id uuid.UUID) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+// NewRunProjectRequest calls the generic RunProject builder with application/json body
+func NewRunProjectRequest(server string, body RunProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRunProjectRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRunProjectRequestWithBody generates requests for RunProject with any type of body
+func NewRunProjectRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/projects/%s/run", pathParam0)
+	operationPath := fmt.Sprintf("/v1/projects/run")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -442,16 +454,18 @@ func NewRunProjectRequest(server string, id uuid.UUID) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
+	req.Header.Add("Content-Type", contentType)
+
 	return req, nil
 }
 
-// NewGetRunsForProjectRequest generates requests for GetRunsForProject
-func NewGetRunsForProjectRequest(server string, id uuid.UUID, params *GetRunsForProjectParams) (*http.Request, error) {
+// NewListRunsForProjectRequest generates requests for ListRunsForProject
+func NewListRunsForProjectRequest(server string, id uuid.UUID, params *ListRunsForProjectParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -569,40 +583,6 @@ func NewCreateScenarioRequestWithBody(server string, id uuid.UUID, contentType s
 	return req, nil
 }
 
-// NewRunProjectByNameRequest generates requests for RunProjectByName
-func NewRunProjectByNameRequest(server string, name string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/projects/%s/run-by-name", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -654,19 +634,18 @@ type ClientWithResponsesInterface interface {
 
 	CreateProjectWithResponse(ctx context.Context, body CreateProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProjectResponse, error)
 
-	// RunProjectWithResponse request
-	RunProjectWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*RunProjectResponse, error)
+	// RunProjectWithBodyWithResponse request with any body
+	RunProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RunProjectResponse, error)
 
-	// GetRunsForProjectWithResponse request
-	GetRunsForProjectWithResponse(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*GetRunsForProjectResponse, error)
+	RunProjectWithResponse(ctx context.Context, body RunProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*RunProjectResponse, error)
+
+	// ListRunsForProjectWithResponse request
+	ListRunsForProjectWithResponse(ctx context.Context, id uuid.UUID, params *ListRunsForProjectParams, reqEditors ...RequestEditorFn) (*ListRunsForProjectResponse, error)
 
 	// CreateScenarioWithBodyWithResponse request with any body
 	CreateScenarioWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
 
 	CreateScenarioWithResponse(ctx context.Context, id uuid.UUID, body CreateScenarioJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScenarioResponse, error)
-
-	// RunProjectByNameWithResponse request
-	RunProjectByNameWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*RunProjectByNameResponse, error)
 }
 
 type ListProjectsResponse struct {
@@ -738,7 +717,7 @@ func (r RunProjectResponse) StatusCode() int {
 	return 0
 }
 
-type GetRunsForProjectResponse struct {
+type ListRunsForProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ProjectRunOutputArray
@@ -746,7 +725,7 @@ type GetRunsForProjectResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetRunsForProjectResponse) Status() string {
+func (r ListRunsForProjectResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -754,7 +733,7 @@ func (r GetRunsForProjectResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetRunsForProjectResponse) StatusCode() int {
+func (r ListRunsForProjectResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -778,29 +757,6 @@ func (r CreateScenarioResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateScenarioResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type RunProjectByNameResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ProjectRunOutput
-	JSONDefault  *ErrMsg
-}
-
-// Status returns HTTPResponse.Status
-func (r RunProjectByNameResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r RunProjectByNameResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -833,22 +789,30 @@ func (c *ClientWithResponses) CreateProjectWithResponse(ctx context.Context, bod
 	return ParseCreateProjectResponse(rsp)
 }
 
-// RunProjectWithResponse request returning *RunProjectResponse
-func (c *ClientWithResponses) RunProjectWithResponse(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*RunProjectResponse, error) {
-	rsp, err := c.RunProject(ctx, id, reqEditors...)
+// RunProjectWithBodyWithResponse request with arbitrary body returning *RunProjectResponse
+func (c *ClientWithResponses) RunProjectWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RunProjectResponse, error) {
+	rsp, err := c.RunProjectWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseRunProjectResponse(rsp)
 }
 
-// GetRunsForProjectWithResponse request returning *GetRunsForProjectResponse
-func (c *ClientWithResponses) GetRunsForProjectWithResponse(ctx context.Context, id uuid.UUID, params *GetRunsForProjectParams, reqEditors ...RequestEditorFn) (*GetRunsForProjectResponse, error) {
-	rsp, err := c.GetRunsForProject(ctx, id, params, reqEditors...)
+func (c *ClientWithResponses) RunProjectWithResponse(ctx context.Context, body RunProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*RunProjectResponse, error) {
+	rsp, err := c.RunProject(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetRunsForProjectResponse(rsp)
+	return ParseRunProjectResponse(rsp)
+}
+
+// ListRunsForProjectWithResponse request returning *ListRunsForProjectResponse
+func (c *ClientWithResponses) ListRunsForProjectWithResponse(ctx context.Context, id uuid.UUID, params *ListRunsForProjectParams, reqEditors ...RequestEditorFn) (*ListRunsForProjectResponse, error) {
+	rsp, err := c.ListRunsForProject(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRunsForProjectResponse(rsp)
 }
 
 // CreateScenarioWithBodyWithResponse request with arbitrary body returning *CreateScenarioResponse
@@ -866,15 +830,6 @@ func (c *ClientWithResponses) CreateScenarioWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseCreateScenarioResponse(rsp)
-}
-
-// RunProjectByNameWithResponse request returning *RunProjectByNameResponse
-func (c *ClientWithResponses) RunProjectByNameWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*RunProjectByNameResponse, error) {
-	rsp, err := c.RunProjectByName(ctx, name, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseRunProjectByNameResponse(rsp)
 }
 
 // ParseListProjectsResponse parses an HTTP response from a ListProjectsWithResponse call
@@ -976,15 +931,15 @@ func ParseRunProjectResponse(rsp *http.Response) (*RunProjectResponse, error) {
 	return response, nil
 }
 
-// ParseGetRunsForProjectResponse parses an HTTP response from a GetRunsForProjectWithResponse call
-func ParseGetRunsForProjectResponse(rsp *http.Response) (*GetRunsForProjectResponse, error) {
+// ParseListRunsForProjectResponse parses an HTTP response from a ListRunsForProjectWithResponse call
+func ParseListRunsForProjectResponse(rsp *http.Response) (*ListRunsForProjectResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetRunsForProjectResponse{
+	response := &ListRunsForProjectResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1029,39 +984,6 @@ func ParseCreateScenarioResponse(rsp *http.Response) (*CreateScenarioResponse, e
 			return nil, err
 		}
 		response.JSON201 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
-		var dest ErrMsg
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSONDefault = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseRunProjectByNameResponse parses an HTTP response from a RunProjectByNameWithResponse call
-func ParseRunProjectByNameResponse(rsp *http.Response) (*RunProjectByNameResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &RunProjectByNameResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ProjectRunOutput
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
 		var dest ErrMsg

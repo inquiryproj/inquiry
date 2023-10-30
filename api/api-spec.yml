@@ -82,6 +82,16 @@ components:
           x-go-name: ProjectID
           x-go-type-import:
             path: github.com/google/uuid
+    ProjectRunRequest:
+      type: object
+      properties:
+        project_id:
+          x-go-type: uuid.UUID
+          x-go-name: ProjectID
+          x-go-type-import:
+            path: github.com/google/uuid
+        project_name:
+          type: string
     ProjectRunOutput:
       type: object
       required:
@@ -268,49 +278,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrMsg"
-  "/v1/projects/{id}/run":
+  "/v1/projects/run":
     post:
       description: Runs all scenarios for a given project
       operationId: runProject
       tags:
         - projects
         - run
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-            x-go-type: uuid.UUID
-            x-go-name: ID
-            x-go-type-import:
-              path: github.com/google/uuid
-          required: true
-      responses: 
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProjectRunOutput"
-          description: The scenarios for the project ran successfully.
-        default:
-          description: Something went wrong while running the scenarios
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrMsg"
-  "/v1/projects/{name}/run-by-name":
-    post:
-      description: Runs all scenarios for a given project with a given name
-      operationId: runProjectByName
-      tags:
-        - projects
-        - run
-      parameters:
-        - in: path
-          name: name
-          schema:
-            type: string
-          required: true
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/ProjectRunRequest"
       responses: 
         "200":
           content:
@@ -327,7 +307,7 @@ paths:
   "/v1/projects/{id}/runs":
     get:
       description: Retrieves all runs for a given project
-      operationId: getRunsForProject
+      operationId: listRunsForProject
       tags:
         - projects
         - run

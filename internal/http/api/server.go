@@ -21,17 +21,14 @@ type ServerInterface interface {
 	// (POST /v1/projects)
 	CreateProject(ctx echo.Context) error
 
-	// (POST /v1/projects/{id}/run)
-	RunProject(ctx echo.Context, id uuid.UUID) error
+	// (POST /v1/projects/run)
+	RunProject(ctx echo.Context) error
 
 	// (GET /v1/projects/{id}/runs)
-	GetRunsForProject(ctx echo.Context, id uuid.UUID, params GetRunsForProjectParams) error
+	ListRunsForProject(ctx echo.Context, id uuid.UUID, params ListRunsForProjectParams) error
 
 	// (POST /v1/projects/{id}/scenarios)
 	CreateScenario(ctx echo.Context, id uuid.UUID) error
-
-	// (POST /v1/projects/{name}/run-by-name)
-	RunProjectByName(ctx echo.Context, name string) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -80,23 +77,16 @@ func (w *ServerInterfaceWrapper) CreateProject(ctx echo.Context) error {
 // RunProject converts echo context to params.
 func (w *ServerInterfaceWrapper) RunProject(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "id" -------------
-	var id uuid.UUID
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
-	}
 
 	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.RunProject(ctx, id)
+	err = w.Handler.RunProject(ctx)
 	return err
 }
 
-// GetRunsForProject converts echo context to params.
-func (w *ServerInterfaceWrapper) GetRunsForProject(ctx echo.Context) error {
+// ListRunsForProject converts echo context to params.
+func (w *ServerInterfaceWrapper) ListRunsForProject(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id uuid.UUID
@@ -109,7 +99,7 @@ func (w *ServerInterfaceWrapper) GetRunsForProject(ctx echo.Context) error {
 	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetRunsForProjectParams
+	var params ListRunsForProjectParams
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
@@ -125,7 +115,7 @@ func (w *ServerInterfaceWrapper) GetRunsForProject(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetRunsForProject(ctx, id, params)
+	err = w.Handler.ListRunsForProject(ctx, id, params)
 	return err
 }
 
@@ -144,24 +134,6 @@ func (w *ServerInterfaceWrapper) CreateScenario(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.CreateScenario(ctx, id)
-	return err
-}
-
-// RunProjectByName converts echo context to params.
-func (w *ServerInterfaceWrapper) RunProjectByName(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "name" -------------
-	var name string
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "name", runtime.ParamLocationPath, ctx.Param("name"), &name)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter name: %s", err))
-	}
-
-	ctx.Set(ApiKeyAuthScopes, []string{})
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.RunProjectByName(ctx, name)
 	return err
 }
 
@@ -195,9 +167,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/v1/projects", wrapper.ListProjects)
 	router.POST(baseURL+"/v1/projects", wrapper.CreateProject)
-	router.POST(baseURL+"/v1/projects/:id/run", wrapper.RunProject)
-	router.GET(baseURL+"/v1/projects/:id/runs", wrapper.GetRunsForProject)
+	router.POST(baseURL+"/v1/projects/run", wrapper.RunProject)
+	router.GET(baseURL+"/v1/projects/:id/runs", wrapper.ListRunsForProject)
 	router.POST(baseURL+"/v1/projects/:id/scenarios", wrapper.CreateScenario)
-	router.POST(baseURL+"/v1/projects/:name/run-by-name", wrapper.RunProjectByName)
 
 }
