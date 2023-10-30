@@ -37,6 +37,24 @@ func (s *SQLiteIntegrationSuite) TearDownSuite() {
 	s.NoError(os.Remove("integration_test.db"))
 }
 
+func (s *SQLiteIntegrationSuite) TestAlreadySeededDB() {
+	// Ensure that we can run the migrations and seed the DB multiple times without error.
+	s.NoError(MigrateAndSeed(s.repository.APIKeyRepository.conn, s.logger, s.migrationOpts))
+}
+
+func (s *SQLiteIntegrationSuite) TestSeedExistingWithoutKey() {
+	s.repository.APIKeyRepository.conn.Migrator().DropTable(tableList()...)
+	s.NoError(MigrateAndSeed(s.repository.APIKeyRepository.conn, s.logger, &MigrationOptions{}))
+}
+
+func (s *SQLiteIntegrationSuite) TestSeedEmptyWithoutKey() {
+	s.repository.APIKeyRepository.conn.Migrator().DropTable(tableList()...)
+	s.NoError(MigrateAndSeed(s.repository.APIKeyRepository.conn, s.logger, &MigrationOptions{}))
+	s.NoError(MigrateAndSeed(s.repository.APIKeyRepository.conn, s.logger, &MigrationOptions{
+		APIKey: "foo",
+	}))
+}
+
 func TestSQLiteIntegration(t *testing.T) {
 	sqliteIntegrationSuite := &SQLiteIntegrationSuite{
 		migrationOpts: &MigrationOptions{
