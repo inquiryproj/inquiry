@@ -71,10 +71,15 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 	}
 	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()))
 
+	success := true
+	for _, scenarioResult := range scenarioResults {
+		success = success && scenarioResult.Success
+	}
+
 	_, err = p.runRepository.Update(ctx, &domain.UpdateRunRequest{
 		ID:                 runID,
 		State:              domain.RunStateCompleted,
-		Success:            true,
+		Success:            success,
 		ScenarioRunDetails: executeResultsToScenarioRunDetails(scenarioResults),
 	})
 	if err != nil {

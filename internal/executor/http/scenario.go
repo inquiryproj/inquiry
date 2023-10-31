@@ -107,17 +107,12 @@ func (e Executor) playStep(step *Step) (*ExecuteStepResult, error) {
 }
 
 func (e Executor) executeWithRetries(retries int, timeout time.Duration, step *Step) (*ExecuteStepResult, error) {
-	retriesLeft := 0
-	if step.Retry != nil {
-		retriesLeft = step.Retry.Attempts - retries
-	}
-
 	stepResult, err := e.executeAndValidate(step)
-	stepResult.Retries = retriesLeft
+	stepResult.Retries = retries
 	if retries <= 0 {
 		return stepResult, err
 	}
-	if err != nil {
+	if err != nil || !stepResult.Success {
 		e.logger.Debug(fmt.Sprintf("retrying step %s in %v seconds", step.Name, timeout.Seconds()))
 		time.Sleep(timeout)
 		return e.executeWithRetries(retries-1, timeout, step)
