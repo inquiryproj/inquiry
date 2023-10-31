@@ -3,6 +3,7 @@ gofumptVersion = "v0.5.0"
 gciVersion = "v0.11.0"
 oapiCodegenVersion = "v1.15.0"
 mockeryVersion = "v2.36.0"
+dockerRepo = "wimsp/inquiry"
 
 $(GOBIN)/golangci-lint:
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@${golangciLintVersion}
@@ -77,4 +78,9 @@ mocks: | $(GOBIN)/mockery
 	@go generate --tags=mocks ./...
 	@${MAKE} format
 
+docker-build-and-push:
+	@docker build --push --tag ${dockerRepo}:${VERSION} --tag wimsp/inquiry:latest --platform=linux/amd64 .
+
+docker-build-and-push-arm:
+	@docker buildx build --push --tag ${dockerRepo}:${VERSION} --tag wimsp/inquiry:latest --platform=linux/amd64 .
 
