@@ -55,10 +55,12 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 		return runID, err
 	}
 
-	p.logger.Info("processing project", slog.String("project_id", run.ProjectID.String()))
+	p.logger.Info("processing project", slog.String("project_id", run.ProjectID.String()), slog.String("run_id", runID.String()))
 
 	scenarioResults, err := p.processProject(ctx, run.ProjectID)
 	if err != nil {
+		p.logger.Error("project failed", slog.String("project_id", run.ProjectID.String()), slog.String("run_id", runID.String()), slog.String("error", err.Error()))
+
 		_, updateErr := p.runRepository.Update(ctx, &domain.UpdateRunRequest{
 			ID:           runID,
 			State:        domain.RunStateFailure,
@@ -69,7 +71,7 @@ func (p *processor) Process(runID uuid.UUID) (uuid.UUID, error) {
 		}
 		return runID, err
 	}
-	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()))
+	p.logger.Info("project processed", slog.String("project_id", run.ProjectID.String()), slog.String("run_id", runID.String()))
 
 	success := true
 	for _, scenarioResult := range scenarioResults {

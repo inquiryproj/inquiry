@@ -44,5 +44,7 @@ type Scenario struct {
 
 // GetScenariosForProjectRequest requests model for retrieving scenarios for a project.
 type GetScenariosForProjectRequest struct {
+	Limit     int
+	Offset    int
 	ProjectID uuid.UUID
 }

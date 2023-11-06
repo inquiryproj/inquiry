@@ -15,25 +15,25 @@ type Runner struct {
 	mock.Mock
 }
 
-// GetRunsForProject provides a mock function with given fields: ctx, getRunsForProjectRequest
-func (_m *Runner) GetRunsForProject(ctx context.Context, getRunsForProjectRequest *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error) {
-	ret := _m.Called(ctx, getRunsForProjectRequest)
+// ListRunsForProject provides a mock function with given fields: ctx, listRunsForProjectRequest
+func (_m *Runner) ListRunsForProject(ctx context.Context, listRunsForProjectRequest *app.ListRunsForProjectRequest) (*app.ListRunsForProjectResponse, error) {
+	ret := _m.Called(ctx, listRunsForProjectRequest)
 
-	var r0 *app.GetRunsForProjectResponse
+	var r0 *app.ListRunsForProjectResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error)); ok {
-		return rf(ctx, getRunsForProjectRequest)
+	if rf, ok := ret.Get(0).(func(context.Context, *app.ListRunsForProjectRequest) (*app.ListRunsForProjectResponse, error)); ok {
+		return rf(ctx, listRunsForProjectRequest)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *app.GetRunsForProjectRequest) *app.GetRunsForProjectResponse); ok {
-		r0 = rf(ctx, getRunsForProjectRequest)
+	if rf, ok := ret.Get(0).(func(context.Context, *app.ListRunsForProjectRequest) *app.ListRunsForProjectResponse); ok {
+		r0 = rf(ctx, listRunsForProjectRequest)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*app.GetRunsForProjectResponse)
+			r0 = ret.Get(0).(*app.ListRunsForProjectResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *app.GetRunsForProjectRequest) error); ok {
-		r1 = rf(ctx, getRunsForProjectRequest)
+	if rf, ok := ret.Get(1).(func(context.Context, *app.ListRunsForProjectRequest) error); ok {
+		r1 = rf(ctx, listRunsForProjectRequest)
 	} else {
 		r1 = ret.Error(1)
 	}

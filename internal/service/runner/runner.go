@@ -85,12 +85,12 @@ func (s *Runner) runProjectForID(ctx context.Context, projectID uuid.UUID) (*app
 	}, nil
 }
 
-// GetRunsForProject returns runs for a given project, limit and offset.
-func (s *Runner) GetRunsForProject(ctx context.Context, getRunsForProjectRequest *app.GetRunsForProjectRequest) (*app.GetRunsForProjectResponse, error) {
+// ListRunsForProject returns runs for a given project, limit and offset.
+func (s *Runner) ListRunsForProject(ctx context.Context, listRunsForProjectRequest *app.ListRunsForProjectRequest) (*app.ListRunsForProjectResponse, error) {
 	res, err := s.runRepository.ListForProject(ctx, &domain.ListRunsForProjectRequest{
-		ProjectID: getRunsForProjectRequest.ProjectID,
-		Limit:     getRunsForProjectRequest.Limit,
-		Offset:    getRunsForProjectRequest.Offset,
+		ProjectID: listRunsForProjectRequest.ProjectID,
+		Limit:     listRunsForProjectRequest.Limit,
+		Offset:    listRunsForProjectRequest.Offset,
 	})
 	if err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ func (s *Runner) GetRunsForProject(ctx context.Context, getRunsForProjectRequest
 			ScenarioRunDetails: scenarioRunDetailsToAppScenarioRunDetails(run.ScenarioRunDetails),
 		}
 	}
-	return &app.GetRunsForProjectResponse{
+	return &app.ListRunsForProjectResponse{
 		Runs: projectRunOutputs,
 	}, nil
 }

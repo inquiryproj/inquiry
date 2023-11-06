@@ -27,8 +27,11 @@ type ServerInterface interface {
 	// (GET /v1/projects/{id}/runs)
 	ListRunsForProject(ctx echo.Context, id uuid.UUID, params ListRunsForProjectParams) error
 
-	// (POST /v1/projects/{id}/scenarios)
-	CreateScenario(ctx echo.Context, id uuid.UUID) error
+	// (GET /v1/projects/{project_id}/scenarios)
+	ListScenariosForProject(ctx echo.Context, projectId uuid.UUID, params ListScenariosForProjectParams) error
+
+	// (POST /v1/projects/{project_id}/scenarios)
+	CreateScenario(ctx echo.Context, projectId uuid.UUID) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -119,21 +122,55 @@ func (w *ServerInterfaceWrapper) ListRunsForProject(ctx echo.Context) error {
 	return err
 }
 
+// ListScenariosForProject converts echo context to params.
+func (w *ServerInterfaceWrapper) ListScenariosForProject(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "project_id" -------------
+	var projectId uuid.UUID
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project_id", runtime.ParamLocationPath, ctx.Param("project_id"), &projectId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter project_id: %s", err))
+	}
+
+	ctx.Set(ApiKeyAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListScenariosForProjectParams
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.ListScenariosForProject(ctx, projectId, params)
+	return err
+}
+
 // CreateScenario converts echo context to params.
 func (w *ServerInterfaceWrapper) CreateScenario(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "id" -------------
-	var id uuid.UUID
+	// ------------- Path parameter "project_id" -------------
+	var projectId uuid.UUID
 
-	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	err = runtime.BindStyledParameterWithLocation("simple", false, "project_id", runtime.ParamLocationPath, ctx.Param("project_id"), &projectId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter project_id: %s", err))
 	}
 
 	ctx.Set(ApiKeyAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.CreateScenario(ctx, id)
+	err = w.Handler.CreateScenario(ctx, projectId)
 	return err
 }
 
@@ -169,6 +206,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/v1/projects", wrapper.CreateProject)
 	router.POST(baseURL+"/v1/projects/run", wrapper.RunProject)
 	router.GET(baseURL+"/v1/projects/:id/runs", wrapper.ListRunsForProject)
-	router.POST(baseURL+"/v1/projects/:id/scenarios", wrapper.CreateScenario)
+	router.GET(baseURL+"/v1/projects/:project_id/scenarios", wrapper.ListScenariosForProject)
+	router.POST(baseURL+"/v1/projects/:project_id/scenarios", wrapper.CreateScenario)
 
 }

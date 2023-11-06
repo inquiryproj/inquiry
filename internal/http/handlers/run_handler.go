@@ -73,18 +73,18 @@ func projectRunOutputToHTTP(projectRunOutput *app.ProjectRunOutput) api.ProjectR
 
 // ListRunsForProject returns runs for a given project.
 func (h *RunHandler) ListRunsForProject(ctx echo.Context, id uuid.UUID, params api.ListRunsForProjectParams) error {
-	getRunsForProjectRequest := &app.GetRunsForProjectRequest{
+	listRunsForProjectRequest := &app.ListRunsForProjectRequest{
 		Limit:     100,
 		Offset:    0,
 		ProjectID: id,
 	}
 	if params.Limit != nil {
-		getRunsForProjectRequest.Limit = *params.Limit
+		listRunsForProjectRequest.Limit = *params.Limit
 	}
 	if params.Offset != nil {
-		getRunsForProjectRequest.Offset = *params.Offset
+		listRunsForProjectRequest.Offset = *params.Offset
 	}
-	runs, err := h.runnerService.GetRunsForProject(ctx.Request().Context(), getRunsForProjectRequest)
+	runs, err := h.runnerService.ListRunsForProject(ctx.Request().Context(), listRunsForProjectRequest)
 	if err != nil {
 		h.logger.Error("failed to get runs for project", slog.String("error", err.Error()))
 		return echo.NewHTTPError(http.StatusInternalServerError, "unable to get runs for project")

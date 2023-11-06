@@ -41,6 +41,32 @@ func (_m *Scenario) CreateScenario(ctx context.Context, createScenarioRequest *a
 	return r0, r1
 }
 
+// ListScenarios provides a mock function with given fields: ctx, listScenariosRequest
+func (_m *Scenario) ListScenarios(ctx context.Context, listScenariosRequest *app.ListScenariosRequest) ([]*app.Scenario, error) {
+	ret := _m.Called(ctx, listScenariosRequest)
+
+	var r0 []*app.Scenario
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *app.ListScenariosRequest) ([]*app.Scenario, error)); ok {
+		return rf(ctx, listScenariosRequest)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *app.ListScenariosRequest) []*app.Scenario); ok {
+		r0 = rf(ctx, listScenariosRequest)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*app.Scenario)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *app.ListScenariosRequest) error); ok {
+		r1 = rf(ctx, listScenariosRequest)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewScenario creates a new instance of Scenario. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewScenario(t interface {

@@ -72,6 +72,9 @@ type Scenario struct {
 // ScenarioSpecType defines model for Scenario.SpecType.
 type ScenarioSpecType string
 
+// ScenarioArray defines model for ScenarioArray.
+type ScenarioArray = []Scenario
+
 // ScenarioCreateRequest defines model for ScenarioCreateRequest.
 type ScenarioCreateRequest struct {
 	Name string `json:"name"`
@@ -116,6 +119,15 @@ type ListRunsForProjectParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset The number of runs to skip
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListScenariosForProjectParams defines parameters for ListScenariosForProject.
+type ListScenariosForProjectParams struct {
+	// Limit The number of scenarios to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset The number of scenarios to skip
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 

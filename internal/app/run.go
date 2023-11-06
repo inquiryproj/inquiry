@@ -58,14 +58,14 @@ type StepRunDetails struct {
 	Success         bool
 }
 
-// GetRunsForProjectRequest requests model for getting runs for a project.
-type GetRunsForProjectRequest struct {
+// ListRunsForProjectRequest requests model for getting runs for a project.
+type ListRunsForProjectRequest struct {
 	ProjectID uuid.UUID
 	Limit     int
 	Offset    int
 }
 
-// GetRunsForProjectResponse is the response model for getting runs for a project.
-type GetRunsForProjectResponse struct {
+// ListRunsForProjectResponse is the response model for getting runs for a project.
+type ListRunsForProjectResponse struct {
 	Runs []*ProjectRunOutput
 }
