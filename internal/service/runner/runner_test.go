@@ -30,14 +30,14 @@ func newMockWrapper(t *testing.T) *mockWrapper {
 	}
 }
 
-func TestGetRunsForProject(t *testing.T) {
+func TestListRunsForProject(t *testing.T) {
 	projectID := uuid.New()
 	runID := uuid.New()
 	tests := []struct {
-		name                     string
-		getRunsForProjectRequest *app.GetRunsForProjectRequest
-		setupMocks               func(*mockWrapper)
-		validateOutput           func(*testing.T, *app.GetRunsForProjectResponse, error)
+		name                      string
+		listRunsForProjectRequest *app.ListRunsForProjectRequest
+		setupMocks                func(*mockWrapper)
+		validateOutput            func(*testing.T, *app.ListRunsForProjectResponse, error)
 	}{
 		{
 			name: "success",
@@ -60,7 +60,7 @@ func TestGetRunsForProject(t *testing.T) {
 						},
 					}, nil)
 			},
-			validateOutput: func(t *testing.T, res *app.GetRunsForProjectResponse, err error) {
+			validateOutput: func(t *testing.T, res *app.ListRunsForProjectResponse, err error) {
 				assert.NoError(t, err)
 
 				assert.Equal(t, 1, len(res.Runs))
@@ -90,7 +90,7 @@ func TestGetRunsForProject(t *testing.T) {
 					}).
 					Return([]*domain.Run{}, nil)
 			},
-			validateOutput: func(t *testing.T, res *app.GetRunsForProjectResponse, err error) {
+			validateOutput: func(t *testing.T, res *app.ListRunsForProjectResponse, err error) {
 				assert.NoError(t, err)
 
 				assert.Equal(t, 0, len(res.Runs))
@@ -114,7 +114,7 @@ func TestGetRunsForProject(t *testing.T) {
 						},
 					}, nil)
 			},
-			validateOutput: func(t *testing.T, res *app.GetRunsForProjectResponse, err error) {
+			validateOutput: func(t *testing.T, res *app.ListRunsForProjectResponse, err error) {
 				assert.NoError(t, err)
 
 				assert.Equal(t, 1, len(res.Runs))
@@ -131,25 +131,25 @@ func TestGetRunsForProject(t *testing.T) {
 					}).
 					Return(nil, assert.AnError)
 			},
-			validateOutput: func(t *testing.T, res *app.GetRunsForProjectResponse, err error) {
+			validateOutput: func(t *testing.T, res *app.ListRunsForProjectResponse, err error) {
 				assert.Error(t, err)
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defaultInput := &app.GetRunsForProjectRequest{
+			defaultInput := &app.ListRunsForProjectRequest{
 				ProjectID: projectID,
 				Limit:     10,
 				Offset:    0,
 			}
-			if tt.getRunsForProjectRequest != nil {
-				defaultInput = tt.getRunsForProjectRequest
+			if tt.listRunsForProjectRequest != nil {
+				defaultInput = tt.listRunsForProjectRequest
 			}
 			wrapper := newMockWrapper(t)
 			tt.setupMocks(wrapper)
 			s := newRunnerService(wrapper)
-			res, err := s.GetRunsForProject(context.Background(), defaultInput)
+			res, err := s.ListRunsForProject(context.Background(), defaultInput)
 			tt.validateOutput(t, res, err)
 		})
 	}

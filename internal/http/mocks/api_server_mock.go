@@ -29,13 +29,13 @@ func (_m *ServerInterface) CreateProject(ctx echo.Context) error {
 	return r0
 }
 
-// CreateScenario provides a mock function with given fields: ctx, id
-func (_m *ServerInterface) CreateScenario(ctx echo.Context, id uuid.UUID) error {
-	ret := _m.Called(ctx, id)
+// CreateScenario provides a mock function with given fields: ctx, projectId
+func (_m *ServerInterface) CreateScenario(ctx echo.Context, projectId uuid.UUID) error {
+	ret := _m.Called(ctx, projectId)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(echo.Context, uuid.UUID) error); ok {
-		r0 = rf(ctx, id)
+		r0 = rf(ctx, projectId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -64,6 +64,20 @@ func (_m *ServerInterface) ListRunsForProject(ctx echo.Context, id uuid.UUID, pa
 	var r0 error
 	if rf, ok := ret.Get(0).(func(echo.Context, uuid.UUID, api.ListRunsForProjectParams) error); ok {
 		r0 = rf(ctx, id, params)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ListScenariosForProject provides a mock function with given fields: ctx, projectId, params
+func (_m *ServerInterface) ListScenariosForProject(ctx echo.Context, projectId uuid.UUID, params api.ListScenariosForProjectParams) error {
+	ret := _m.Called(ctx, projectId, params)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(echo.Context, uuid.UUID, api.ListScenariosForProjectParams) error); ok {
+		r0 = rf(ctx, projectId, params)
 	} else {
 		r0 = ret.Error(0)
 	}

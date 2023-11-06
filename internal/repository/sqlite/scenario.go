@@ -11,6 +11,8 @@ import (
 	"github.com/inquiryproj/inquiry/internal/repository/domain"
 )
 
+const defaultScenarioLimit = 100
+
 // Scenario is the sqlite model for scenarios.
 type Scenario struct {
 	BaseModel
@@ -51,8 +53,16 @@ func (r *ScenarioRepository) Create(ctx context.Context, createScenarioRequest *
 
 // GetForProject returns all scenarios for a given project.
 func (r *ScenarioRepository) GetForProject(ctx context.Context, getForProjectRequest *domain.GetScenariosForProjectRequest) ([]*domain.Scenario, error) {
+	if getForProjectRequest.Limit == 0 {
+		getForProjectRequest.Limit = defaultScenarioLimit
+	}
 	scenarios := []*Scenario{}
-	err := r.conn.WithContext(ctx).Model(&Scenario{}).Where("project_id = ?", getForProjectRequest.ProjectID).Find(&scenarios).Error
+	err := r.conn.WithContext(ctx).
+		Model(&Scenario{}).
+		Limit(getForProjectRequest.Limit).
+		Offset(getForProjectRequest.Limit*getForProjectRequest.Offset).
+		Where("project_id = ?", getForProjectRequest.ProjectID).
+		Find(&scenarios).Error
 	if err != nil {
 		return nil, err
 	}

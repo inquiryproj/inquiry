@@ -175,11 +175,11 @@ func TestListRunsForProject(t *testing.T) {
 						},
 					}, args.Get(1))
 				}).Return(nil)
-				runnerServiceMock.On("GetRunsForProject", mock.Anything, &app.GetRunsForProjectRequest{
+				runnerServiceMock.On("ListRunsForProject", mock.Anything, &app.ListRunsForProjectRequest{
 					Limit:     100,
 					Offset:    0,
 					ProjectID: projectID,
-				}).Return(&app.GetRunsForProjectResponse{
+				}).Return(&app.ListRunsForProjectResponse{
 					Runs: []*app.ProjectRunOutput{
 						dummyProjectRunOutput(projectID, runID),
 					},
@@ -190,7 +190,7 @@ func TestListRunsForProject(t *testing.T) {
 			name: "unable to get runs for project",
 			setupMocks: func(echoMockContext *httpMocks.Context, runnerServiceMock *serviceMocks.Runner) {
 				echoMockContext.On("Request").Return(&http.Request{})
-				runnerServiceMock.On("GetRunsForProject", mock.Anything, &app.GetRunsForProjectRequest{
+				runnerServiceMock.On("ListRunsForProject", mock.Anything, &app.ListRunsForProjectRequest{
 					Limit:     50,
 					Offset:    10,
 					ProjectID: projectID,

@@ -84,6 +84,10 @@ components:
           x-go-name: ProjectID
           x-go-type-import:
             path: github.com/google/uuid
+    ScenarioArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Scenario'
     ProjectRunRequest:
       type: object
       properties:
@@ -244,7 +248,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrMsg"
-  "/v1/projects/{id}/scenarios":
+  "/v1/projects/{project_id}/scenarios":
     post:
       description: Creates a scenario
       operationId: createScenario
@@ -253,7 +257,7 @@ paths:
         - create
       parameters:
         - in: path
-          name: id
+          name: project_id
           schema:
             type: string
             x-go-type: uuid.UUID
@@ -276,6 +280,48 @@ paths:
           description: The scenario was successfully created.
         default:
           description: Unable to create scenario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrMsg"
+    get:
+      description: List scenarios for project
+      operationId: listScenariosForProject
+      tags:
+        - scenarios
+        - list
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: string
+            x-go-type: uuid.UUID
+            x-go-name: ID
+            x-go-type-import:
+              path: github.com/google/uuid
+          required: true
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 250
+          description: The number of scenarios to return
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: The number of scenarios to skip
+      responses: 
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioArray"
+          description: List of scenarios.
+        default:
+          description: Unable to list scenarios for project
           content:
             application/json:
               schema:
