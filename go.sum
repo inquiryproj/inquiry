@@ -43,8 +43,8 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWb
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oapi-codegen/runtime v1.0.0 h1:P4rqFX5fMFWqRzY9M/3YF9+aPSPPB06IzP2P7oOxrWo=
 github.com/oapi-codegen/runtime v1.0.0/go.mod h1:LmCUMQuPB4M/nLXilQXhHw+BLZdDb18B34OO356yJ/A=
-github.com/orandin/slog-gorm v1.0.0 h1:Okrfg8+9PRh3EBZ3zyMkTMw3LJpUAyofxAF3rIIasAU=
-github.com/orandin/slog-gorm v1.0.0/go.mod h1:B0lGJNCGwGEb2cbZj/aFt6TXL1z7GrKJqRoHx6tu8SI=
+github.com/orandin/slog-gorm v1.0.1 h1:Hyhaajes1rXsgwbH59+qS2JaN31PNEBzMywiFsa2Eiw=
+github.com/orandin/slog-gorm v1.0.1/go.mod h1:QLR+9XefjS+lz7Xw3ZXkDkT5U59h7/0c8TZlMZPqXpI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/samber/lo v1.38.1 h1:j2XEAqXKb09Am4ebOg31SpvzUTTs6EN3VfgeLUhPdXM=
