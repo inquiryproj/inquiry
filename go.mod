@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/oapi-codegen/runtime v1.0.0
 	github.com/orandin/slog-gorm v1.0.1
-	github.com/samber/slog-echo v1.8.0
+	github.com/samber/slog-echo v1.9.0
 	github.com/slack-go/slack v0.12.3
 	github.com/stretchr/testify v1.8.4
 	github.com/tidwall/gjson v1.17.0
